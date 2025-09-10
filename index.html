@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive KQL Session 1 Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fdfcf9;
+        }
+        .kql-keyword { color: #8183c5; }
+        .kql-pipe { color: #333333; }
+        .kql-string { color: #a33e38; }
+        .kql-function { color: #569cd6; }
+        .kql-comment { color: #6a9955; }
+        .kql-table { color: #3c9d74; }
+        .nav-link.active {
+            background-color: #e5e7eb;
+            color: #111827;
+            font-weight: 600;
+        }
+        .code-block {
+            background-color: #f8f8f8;
+            color: #333333;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+        }
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-btn:hover,
+        .close-btn:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #3b82f6;
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="flex min-h-screen">
+        <aside class="w-64 sticky top-0 h-screen bg-gray-100 p-4 hidden lg:block overflow-y-auto">
+            <h2 class="text-lg font-bold mb-4 text-gray-900">Session Guide</h2>
+            <nav id="desktop-nav" class="space-y-2">
+                <a href="#introduction" class="nav-link block px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-200">Session 1: Introduction</a>
+                <a href="#part1" class="nav-link block px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-200">1. KQL Basics</a>
+                <a href="#part2" class="nav-link block px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-200">2. Filtering & Projecting</a>
+                <a href="#part3" class="nav-link block px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-200">3. Aggregation & Time</a>
+                <a href="#part4" class="nav-link block px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-200">4. Joining Tables</a>
+                <a href="#part5" class="nav-link block px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-200">5. Advanced Concepts</a>
+                <a href="#part6" class="nav-link block px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-200">6. Challenge Queries</a>
+            </nav>
+        </aside>
+
+        <main class="flex-1 p-4 sm:p-6 md:p-10">
+            <header class="mb-10">
+                <h1 class="text-4xl font-bold text-gray-900">Interactive KQL Session 1</h1>
+                <p class="mt-2 text-lg text-gray-600">A hands-on guide to Kusto Query Language using the public <code class="bg-gray-200 text-gray-800 px-1 rounded">help.kusto.windows.net</code> cluster.</p>
+            </header>
+            
+            <section id="introduction" class="mb-12 space-y-6 scroll-mt-20">
+                <h2 class="text-3xl font-semibold border-b pb-2 text-gray-900">Session 1: Introduction</h2>
+                <p class="text-gray-700">Welcome to the first session of our interactive Kusto Query Language (KQL) guide! In this session, our goal is to get you comfortable with the fundamental building blocks of KQL. By the end, you'll be able to navigate tables, filter data, and perform basic analysis.</p>
+                <p class="text-gray-700">We will focus our learning primarily on two tables: <code class="bg-gray-200 text-gray-800 px-1 rounded">AuthenticationEvents</code> and <code class="bg-gray-200 text-gray-800 px-1 rounded">Employees</code>. We'll also briefly use <code class="bg-gray-200 text-gray-800 px-1 rounded">InboundBrowsing</code> and <code class="bg-gray-200 text-gray-800 px-1 rounded">OutboundBrowsing</code> to explore advanced concepts.</p>
+            </section>
+
+            <section id="part1" class="mb-12 space-y-6 scroll-mt-20">
+                <h2 class="text-3xl font-semibold border-b pb-2 text-gray-900">Part 1: The Basics - Core Operators & Tables</h2>
+                <p class="text-gray-700">This section covers the fundamental concepts of KQL. We'll explore the data flow model, connect to a database, and learn how to safely preview data from tables, which is the first step in any data exploration task.</p>
+                
+                <div>
+                    <h3 class="text-xl font-medium mb-2">1. Concept: Operators and Piping</h3>
+                    <p class="mb-4">KQL is a data flow language. You start with a data source (like a table), and then use the pipe character <code class="bg-gray-200 text-gray-800 px-1 rounded">|</code> to pass that data through a series of operators. Each operator transforms the data and passes its output to the next one in the chain.</p>
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                        <div class="flex space-x-2 absolute top-2 right-2">
+                            <button class="copy-btn bg-gray-200 text-gray-800 px-2 py-1 rounded-md text-xs hover:bg-gray-300">Copy</button>
+                        </div>
+                        <pre><code><span class="kql-function">print</span> <span class="kql-string">"hello world!"</span></code></pre>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-medium mb-2">2. Viewing Table Schemas</h3>
+                    <p class="mb-4">Before querying a table, you must understand its structure. The <code class="bg-gray-200 text-gray-800 px-1 rounded">getschema</code> operator shows you all the column names and their corresponding data types (<code class="bg-gray-200 text-gray-800 px-1 rounded">string</code>, <code class="bg-gray-200 text-gray-800 px-1 rounded">int</code>, etc.).</p>
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                        <div class="flex space-x-2 absolute top-2 right-2">
+                            <button class="copy-btn bg-gray-200 text-gray-800 px-2 py-1 rounded-md text-xs hover:bg-gray-300">Copy</button>
+                        </div>
+                        <pre><code><span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-function">getschema</span></code></pre>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-medium mb-2">3. Best Practices for Previewing Data</h3>
+                    <p class="mb-4">Never query a full table without limiting the results, as it can be slow and resource-intensive. Use the <code class="bg-gray-200 text-gray-800 px-1 rounded">take</code> operator to grab a small, random sample of records to inspect the data safely.</p>
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                        <div class="flex space-x-2 absolute top-2 right-2">
+                            <button class="copy-btn bg-gray-200 text-gray-800 px-2 py-1 rounded-md text-xs hover:bg-gray-300">Copy</button>
+                        </div>
+                        <pre><code><span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-function">take</span> 10</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section id="part2" class="mb-12 space-y-6 scroll-mt-20">
+                <h2 class="text-3xl font-semibold border-b pb-2 text-gray-900">Part 2: Filtering & Projecting</h2>
+                <p class="text-gray-700">In this section, you'll learn how to get the specific data you need. We will cover filtering rows based on conditions using the powerful <code class="bg-gray-200 text-gray-800 px-1 rounded">where</code> operator, and then selecting, renaming, or even creating new columns using <code class="bg-gray-200 text-gray-800 px-1 rounded">project</code> and <code class="bg-gray-200 text-gray-800 px-1 rounded">extend</code>.</p>
+
+                <div>
+                    <h3 class="text-xl font-medium mb-2">1. Filtering with <code class="text-lg">| where</code></h3>
+                    <p class="mb-4">The <code class="bg-gray-200 text-gray-800 px-1 rounded">where</code> operator filters the data to only include rows that match your specified conditions. You can perform exact matches, partial matches, and check for empty values.</p>
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                        <div class="flex space-x-2 absolute top-2 right-2">
+                            <button class="copy-btn bg-gray-200 text-gray-800 px-2 py-1 rounded-md text-xs hover:bg-gray-300">Copy</button>
+                        </div>
+                        <pre><code><span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> result <span class="kql-pipe">==</span> <span class="kql-string">"Failed Login"</span>
+<span class="kql-pipe">|</span> <span class="kql-function">take</span> 10</code></pre>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-lg font-medium mb-2">2. Optimization: Filter on Time First</h4>
+                    <p class="mb-4">For optimal performance, always apply your time-based filter as the **first** <code class="bg-gray-200 text-gray-800 px-1 rounded">where</code> statement in your query. The KQL engine is highly optimized to prune data partitions by time, which can dramatically reduce the amount of data processed by subsequent operators. This is a critical best practice for large datasets.</p>
+                     <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                        <div class="flex space-x-2 absolute top-2 right-2">
+                            <button class="copy-btn bg-gray-200 text-gray-800 px-2 py-1 rounded-md text-xs hover:bg-gray-300">Copy</button>
+                        </div>
+                        <pre><code><span class="kql-comment">// A well-optimized query filters on a timestamp first.</span>
+<span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> timestamp <span class="kql-pipe">&gt;=</span> <span class="kql-function">ago</span>(7d)
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> result <span class="kql-pipe">==</span> <span class="kql-string">"Successful Login"</span>
+<span class="kql-pipe">|</span> <span class="kql-function">count</span></code></pre>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-lg font-medium mb-2">3. Partial String Matches: <code class="text-md">contains</code> vs. <code class="text-md">has</code></h4>
+                    <p class="mb-4">Both operators search for substrings, but they work differently. <code class="bg-gray-200 text-gray-800 px-1 rounded">contains</code> performs a full scan, while <code class="bg-gray-200 text-gray-800 px-1 rounded">has</code> uses a pre-built index for much faster searches on whole words (tokens).</p>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                            <div class="flex space-x-2 absolute top-2 right-2">
+                                <button class="copy-btn bg-gray-200 text-gray-800 px-2 py-1 rounded-md text-xs hover:bg-gray-300">Copy</button>
+                            </div>
+                            <pre><code><span class="kql-comment">// This works because "Invalid" is a word in the 'details' column</span>
+<span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> details <span class="kql-keyword">contains</span> <span class="kql-string">"Invalid"</span>
+<span class="kql-pipe">|</span> <span class="kql-function">take</span> 10</code></pre>
+                        </div>
+                         <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                            <div class="flex space-x-2 absolute top-2 right-2">
+                                <button class="copy-btn bg-gray-200 text-gray-800 px-2 py-1 rounded-md text-xs hover:bg-gray-300">Copy</button>
+                            </div>
+                            <pre><code><span class="kql-comment">// 'has' is faster and also works with whole words</span>
+<span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> details <span class="kql-keyword">has</span> <span class="kql-string">"Invalid"</span>
+<span class="kql-pipe">|</span> <span class="kql-function">take</span> 10</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-medium mb-2">4. Selecting & Extending Columns</h3>
+                    <p class="mb-4"><code class="bg-gray-200 text-gray-800 px-1 rounded">project</code> lets you pick which columns to display and rename them. <code class="bg-gray-200 text-gray-800 px-1 rounded">extend</code> creates a new column while keeping the existing ones.</p>
+                     <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                        <div class="flex space-x-2 absolute top-2 right-2">
+                            <button class="copy-btn bg-gray-200 text-gray-800 px-2 py-1 rounded-md text-xs hover:bg-gray-300">Copy</button>
+                        </div>
+                        <pre><code><span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">extend</span> event_hour <span class="kql-pipe">=</span> <span class="kql-function">bin</span>(timestamp, 1h)
+<span class="kql-pipe">|</span> <span class="kql-keyword">project</span> timestamp, event_hour, result
+<span class="kql-pipe">|</span> <span class="kql-function">take</span> 10</code></pre>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="part3" class="mb-12 space-y-6 scroll-mt-20">
+                <h2 class="text-3xl font-semibold border-b pb-2 text-gray-900">Part 3: Aggregation & Time-Based Analysis</h2>
+                <p class="text-gray-700">KQL includes a rich library of functions for manipulating data. Here, we'll cover common string and datetime functions. We will also visualize time-series data by grouping events into time buckets, a crucial technique for trend analysis.</p>
+                
+                <div>
+                    <h3 class="text-xl font-medium mb-2">1. Summarizing with <code class="text-lg">bin()</code> for Time Charts</h3>
+                    <p class="mb-4">The <code class="bg-gray-200 text-gray-800 px-1 rounded">bin()</code> function groups data into fixed time intervals (e.g., hours, days). When combined with <code class="bg-gray-200 text-gray-800 px-1 rounded">summarize</code> and <code class="bg-gray-200 text-gray-800 px-1 rounded">render timechart</code>, it's a powerful way to visualize trends.</p>
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                        <div class="flex space-x-2 absolute top-2 right-2">
+                            <button class="copy-btn bg-gray-200 text-gray-800 px-2 py-1 rounded-md text-xs hover:bg-gray-300">Copy</button>
+                        </div>
+                        <pre><code><span class="kql-table">InboundBrowsing</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> timestamp <span class="kql-pipe">&gt;</span> <span class="kql-function">ago</span>(7d)
+<span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> <span class="kql-function">count()</span> <span class="kql-keyword">by</span> <span class="kql-function">bin</span>(timestamp, 1h)
+<span class="kql-pipe">|</span> <span class="kql-function">render</span> timechart</code></pre>
+                    </div>
+                    <div class="mt-6 bg-white p-4 rounded-lg shadow-md">
+                        <p class="text-center font-medium mb-2">Example Visualization: Browsing Activity Per Hour</p>
+                        <div class="chart-container">
+                            <canvas id="timeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-medium mb-2">2. Advanced Aggregations</h3>
+                    <p class="mb-4">The <code class="bg-gray-200 text-gray-800 px-1 rounded">arg_max()</code> and <code class="bg-gray-200 text-gray-800 px-1 rounded">arg_min()</code> functions are powerful ways to find the most recent or earliest event for each item in a group. They return the entire row corresponding to the minimum or maximum value.</p>
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                        <div class="flex space-x-2 absolute top-2 right-2">
+                            <button class="copy-btn bg-gray-200 text-gray-800 px-2 py-1 rounded-md text-xs hover:bg-gray-300">Copy</button>
+                        </div>
+                        <pre><code><span class="kql-comment">// Find the earliest and latest authentication event for each user</span>
+<span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> 
+    earliest_event_timestamp <span class="kql-pipe">=</span> <span class="kql-function">arg_min</span>(timestamp, timestamp), 
+    latest_event_timestamp <span class="kql-pipe">=</span> <span class="kql-function">arg_max</span>(timestamp, timestamp) 
+    <span class="kql-keyword">by</span> username
+<span class="kql-pipe">|</span> <span class="kql-function">take</span> 10</code></pre>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-medium mb-2">3. Aggregating by IP Address</h3>
+                    <p class="mb-4">You can summarize by any column, including IP addresses, to find patterns in network activity. This query finds the top 10 IP addresses with the most authentication attempts.
+                    </p>
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                        <div class="flex space-x-2 absolute top-2 right-2">
+                            <button class="copy-btn bg-gray-200 text-gray-800 px-2 py-1 rounded-md text-xs hover:bg-gray-300">Copy</button>
+                        </div>
+                        <pre><code><span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> Attempts <span class="kql-pipe">=</span> <span class="kql-function">count()</span> <span class="kql-keyword">by</span> src_ip
+<span class="kql-pipe">|</span> <span class="kql-keyword">top</span> 10 <span class="kql-keyword">by</span> Attempts <span class="kql-keyword">desc</span></code></pre>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="part4" class="mb-12 space-y-6 scroll-mt-20">
+                <h2 class="text-3xl font-semibold border-b pb-2 text-gray-900">Part 4: Joining Tables</h2>
+                <p class="text-gray-700">This section focuses on how to combine information from multiple tables to build a more complete picture of events.</p>
+                
+                <div>
+                    <h3 class="text-xl font-medium mb-2">1. The <code class="text-lg">join</code> Operator</h3>
+                    <p class="mb-4">The <code class="bg-gray-200 text-gray-800 px-1 rounded">join</code> operator combines rows from two tables based on a matching key column. The most common types are <code class="bg-gray-200 text-gray-800 px-1 rounded">inner</code> (returns only matching rows) and <code class="bg-gray-200 text-gray-800 px-1 rounded">leftouter</code> (returns all rows from the left table, plus matches from the right).</p>
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                        <div class="flex space-x-2 absolute top-2 right-2">
+                            <button class="copy-btn bg-gray-200 text-gray-800 px-2 py-1 rounded-md text-xs hover:bg-gray-300">Copy</button>
+                        </div>
+                        <pre><code><span class="kql-comment">// Find C-Level employees with failed logins</span>
+<span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> result <span class="kql-pipe">==</span> <span class="kql-string">"Failed Login"</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">join</span> kind<span class="kql-pipe">=</span>inner (
+    <span class="kql-table">Employees</span>
+    <span class="kql-pipe">|</span> <span class="kql-keyword">where</span> role <span class="kql-pipe">==</span> <span class="kql-string">"C-Level"</span>
+) <span class="kql-keyword">on</span> username
+<span class="kql-pipe">|</span> <span class="kql-keyword">project</span> timestamp, employee_name <span class="kql-pipe">=</span> name</code></pre>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-medium mb-2">2. Challenge: Joining Failed Logins with Employee Data</h3>
+                    <p class="mb-4">This challenge builds on our previous lessons. First, find the top 10 users with the most failed logins. Then, join that result with the <code class="bg-gray-200 text-gray-800 px-1 rounded">Employees</code> table to see their full name and role. This is a common security analysis task.</p>
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                        <div class="flex space-x-2 absolute top-2 right-2">
+                            <button class="copy-btn bg-gray-200 text-gray-800 px-2 py-1 rounded-md text-xs hover:bg-gray-300">Copy</button>
+                        </div>
+                        <pre><code><span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> result <span class="kql-pipe">==</span> <span class="kql-string">"Failed Login"</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> FailedAttempts <span class="kql-pipe">=</span> <span class="kql-function">count()</span> <span class="kql-keyword">by</span> username
+<span class="kql-pipe">|</span> <span class="kql-keyword">top</span> 10 <span class="kql-keyword">by</span> FailedAttempts <span class="kql-keyword">desc</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">join</span> kind<span class="kql-pipe">=</span>inner (<span class="kql-table">Employees</span>) <span class="kql-keyword">on</span> username
+<span class="kql-pipe">|</span> <span class="kql-keyword">project</span> name, role, FailedAttempts</code></pre>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="part5" class="mb-12 space-y-6 scroll-mt-20">
+                <h2 class="text-3xl font-semibold border-b pb-2 text-gray-900">Part 5: Advanced Concepts</h2>
+                 <p class="text-gray-700">To write cleaner and more powerful queries, KQL provides features like variables and in-memory tables. In this section, you'll learn how to use <code class="bg-gray-200 text-gray-800 px-1 rounded">let</code> statements to define reusable expressions and <code class="bg-gray-200 text-gray-800 px-1 rounded">datatable</code> to create temporary tables for filtering or testing.</p>
+                
+                 <div>
+                    <h3 class="text-xl font-medium mb-2">1. Reusable Expressions with <code class="text-lg">let</code></h3>
+                    <p class="mb-4">A <code class="bg-gray-200 text-gray-800 px-1 rounded">let</code> statement assigns a name to an expression or function. This is extremely useful for breaking complex queries into logical, readable parts.</p>
+                     <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                        <div class="flex space-x-2 absolute top-2 right-2">
+                            <button class="copy-btn bg-gray-200 text-gray-800 px-2 py-1 rounded-md text-xs hover:bg-gray-300">Copy</button>
+                        </div>
+                        <pre><code><span class="kql-comment">// Find the role of the user with the most failed logins</span>
+<span class="kql-keyword">let</span> FailedLogins <span class="kql-pipe">=</span> <span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> result <span class="kql-pipe">==</span> <span class="kql-string">"Failed Login"</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> <span class="kql-function">count()</span> <span class="kql-keyword">by</span> username
+<span class="kql-pipe">|</span> <span class="kql-keyword">top</span> 1 <span class="kql-keyword">by</span> count_;
+<span class="kql-comment">// Now join that result to the Employees table</span>
+FailedLogins
+<span class="kql-pipe">|</span> <span class="kql-keyword">join</span> kind<span class="kql-pipe">=</span>inner <span class="kql-table">Employees</span> <span class="kql-keyword">on</span> username
+<span class="kql-pipe">|</span> <span class="kql-keyword">project</span> name, role, FailedLoginCount <span class="kql-pipe">=</span> count_</code></pre>
+                    </div>
+                </div>
+                
+                 <div>
+                    <h3 class="text-xl font-medium mb-2">2. In-Memory Tables with <code class="text-lg">datatable</code></h3>
+                    <p class="mb-4">The <code class="bg-gray-200 text-gray-800 px-1 rounded">datatable</code> operator lets you define a small, temporary table directly in your query. It's perfect for filtering against a known list of values, for example, a list of known malicious domains from a threat intelligence feed.</p>
+                     <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                        <div class="flex space-x-2 absolute top-2 right-2">
+                            <button class="copy-btn bg-gray-200 text-gray-800 px-2 py-1 rounded-md text-xs hover:bg-gray-300">Copy</button>
+                        </div>
+                        <pre><code><span class="kql-keyword">let</span> MaliciousDomains <span class="kql-pipe">=</span> <span class="kql-function">datatable</span>(url: <span class="kql-keyword">string</span>) [
+    <span class="kql-string">'badsite.com'</span>,
+    <span class="kql-string">'phishingsite.net'</span>,
+    <span class="kql-string">'virus.ru'</span>
+];
+<span class="kql-table">OutboundBrowsing</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> url <span class="kql-keyword">in</span> (MaliciousDomains)
+<span class="kql-pipe">|</span> <span class="kql-function">take</span> 10</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section id="part6" class="mb-12 space-y-6 scroll-mt-20">
+                <h2 class="text-3xl font-semibold border-b pb-2 text-gray-900">Part 6: Challenge Queries</h2>
+                <p class="text-gray-700">Now it's time to put everything together. These challenges require you to combine filtering, aggregation, and joining to find key insights in the data. Try to solve them yourself before revealing the solution.</p>
+
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
+                    <p class="font-semibold text-blue-800">Challenge 1: Find the top 3 users with the most failed logins in the last 7 days.</p>
+                </div>
+                <button id="solution-btn-1" class="bg-cyan-600 text-white px-4 py-2 rounded-lg hover:bg-cyan-700">Show Solution</button>
+                <div id="solution-div-1" class="hidden mt-4">
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                        <div class="flex space-x-2 absolute top-2 right-2">
+                            <button class="copy-btn bg-gray-200 text-gray-800 px-2 py-1 rounded-md text-xs hover:bg-gray-300">Copy</button>
+                        </div>
+                        <pre><code><span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> timestamp <span class="kql-pipe">&gt;=</span> <span class="kql-function">ago</span>(7d) <span class="kql-keyword">and</span> result <span class="kql-pipe">==</span> <span class="kql-string">"Failed Login"</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> <span class="kql-function">count()</span> <span class="kql-keyword">by</span> username
+<span class="kql-pipe">|</span> <span class="kql-keyword">sort</span> <span class="kql-keyword">by</span> count_ <span class="kql-keyword">desc</span>
+<span class="kql-pipe">|</span> <span class="kql-function">take</span> 3</code></pre>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg mt-8">
+                    <p class="font-semibold text-blue-800">Challenge 2: Find the top 10 IP addresses with the most authentication attempts.</p>
+                </div>
+                <button id="solution-btn-2" class="bg-cyan-600 text-white px-4 py-2 rounded-lg hover:bg-cyan-700">Show Solution</button>
+                <div id="solution-div-2" class="hidden mt-4">
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                        <div class="flex space-x-2 absolute top-2 right-2">
+                            <button class="copy-btn bg-gray-200 text-gray-800 px-2 py-1 rounded-md text-xs hover:bg-gray-300">Copy</button>
+                        </div>
+                        <pre><code><span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> Attempts <span class="kql-pipe">=</span> <span class="kql-function">count()</span> <span class="kql-keyword">by</span> src_ip
+<span class="kql-pipe">|</span> <span class="kql-keyword">top</span> 10 <span class="kql-keyword">by</span> Attempts <span class="kql-keyword">desc</span></code></pre>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg mt-8">
+                    <p class="font-semibold text-blue-800">Challenge 3: Find the top 10 users with the most failed logins and show their full name and role.</p>
+                </div>
+                <button id="solution-btn-3" class="bg-cyan-600 text-white px-4 py-2 rounded-lg hover:bg-cyan-700">Show Solution</button>
+                <div id="solution-div-3" class="hidden mt-4">
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                        <div class="flex space-x-2 absolute top-2 right-2">
+                            <button class="copy-btn bg-gray-200 text-gray-800 px-2 py-1 rounded-md text-xs hover:bg-gray-300">Copy</button>
+                        </div>
+                        <pre><code><span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> result <span class="kql-pipe">==</span> <span class="kql-string">"Failed Login"</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> FailedAttempts <span class="kql-pipe">=</span> <span class="kql-function">count()</span> <span class="kql-keyword">by</span> username
+<span class="kql-pipe">|</span> <span class="kql-keyword">top</span> 10 <span class="kql-keyword">by</span> FailedAttempts <span class="kql-keyword">desc</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">join</span> kind<span class="kql-pipe">=</span>inner (<span class="kql-table">Employees</span>) <span class="kql-keyword">on</span> username
+<span class="kql-pipe">|</span> <span class="kql-keyword">project</span> name, role, FailedAttempts</code></pre>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg mt-8">
+                    <p class="font-semibold text-blue-800">Challenge 4: Find the earliest and latest authentication event for each user.</p>
+                </div>
+                <button id="solution-btn-4" class="bg-cyan-600 text-white px-4 py-2 rounded-lg hover:bg-cyan-700">Show Solution</button>
+                <div id="solution-div-4" class="hidden mt-4">
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                        <div class="flex space-x-2 absolute top-2 right-2">
+                            <button class="copy-btn bg-gray-200 text-gray-800 px-2 py-1 rounded-md text-xs hover:bg-gray-300">Copy</button>
+                        </div>
+                        <pre><code><span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> 
+    earliest_event_timestamp <span class="kql-pipe">=</span> <span class="kql-function">arg_min</span>(timestamp, timestamp), 
+    latest_event_timestamp <span class="kql-pipe">=</span> <span class="kql-function">arg_max</span>(timestamp, timestamp) 
+    <span class="kql-keyword">by</span> username
+<span class="kql-pipe">|</span> <span class="kql-function">take</span> 10</code></pre>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg mt-8">
+                    <p class="font-semibold text-blue-800">Challenge 5: Find all users with successful logins from China and, from that list, find which of them also have successful logins from Russia.</p>
+                </div>
+                <button id="solution-btn-5" class="bg-cyan-600 text-white px-4 py-2 rounded-lg hover:bg-cyan-700">Show Solution</button>
+                <div id="solution-div-5" class="hidden mt-4">
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                        <div class="flex space-x-2 absolute top-2 right-2">
+                            <button class="copy-btn bg-gray-200 text-gray-800 px-2 py-1 rounded-md text-xs hover:bg-gray-300">Copy</button>
+                        </div>
+                        <pre><code><span class="kql-keyword">let</span> C <span class="kql-pipe">=</span> <span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> <span class="kql-keyword">not</span>(<span class="kql-function">ipv4_is_private</span>(src_ip))
+<span class="kql-pipe">|</span> <span class="kql-keyword">extend</span> timestamp <span class="kql-pipe">=</span> <span class="kql-function">todatetime</span>(timestamp)
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> <span class="kql-function">isnotempty</span>(src_ip)
+    <span class="kql-keyword">and</span> result <span class="kql-pipe">==</span> <span class="kql-string">"Successful Login"</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">extend</span> Location <span class="kql-pipe">=</span> <span class="kql-function">geo_info_from_ip_address</span>(src_ip)
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> Location <span class="kql-keyword">contains</span> <span class="kql-string">"China"</span>
+<span class="kql-pipe">|</span> <span class="kql-function">distinct</span> username;
+<span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> <span class="kql-keyword">not</span>(<span class="kql-function">ipv4_is_private</span>(src_ip))
+<span class="kql-pipe">|</span> <span class="kql-keyword">extend</span> Location <span class="kql-pipe">=</span> <span class="kql-function">geo_info_from_ip_address</span>(src_ip)
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> username <span class="kql-keyword">in</span> (C) <span class="kql-keyword">and</span> Location <span class="kql-keyword">contains</span> <span class="kql-string">"Russia"</span>
+<span class="kql-pipe">|</span> <span class="kql-function">distinct</span> username</code></pre>
+                    </div>
+                </div>
+
+            </section>
+
+        </main>
+    </div>
+
+    <!-- The Modal -->
+    <div id="explanationModal" class="modal">
+        <!-- Modal content -->
+        <div class="modal-content text-gray-900">
+            <span class="close-btn">&times;</span>
+            <h3 class="text-xl font-bold mb-4">Query Explanation</h3>
+            <div id="modal-content" class="text-gray-700">
+                <div class="flex justify-center items-center py-10">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    const copyButtons = document.querySelectorAll('.copy-btn');
+    copyButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const codeBlock = btn.closest('.code-block');
+            const code = codeBlock.querySelector('pre code').innerText;
+            
+            const el = document.createElement('textarea');
+            el.value = code;
+            document.body.appendChild(el);
+            el.select();
+            
+            try {
+                document.execCommand('copy');
+                btn.textContent = 'Copied!';
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                btn.textContent = 'Error';
+            }
+            
+            document.body.removeChild(el);
+            
+            setTimeout(() => {
+                btn.textContent = 'Copy';
+            }, 2000);
+        });
+    });
+
+    const solutionBtn1 = document.getElementById('solution-btn-1');
+    const solutionDiv1 = document.getElementById('solution-div-1');
+    solutionBtn1.addEventListener('click', () => {
+        solutionDiv1.classList.toggle('hidden');
+        solutionBtn1.textContent = solutionDiv1.classList.contains('hidden') ? 'Show Solution' : 'Hide Solution';
+    });
+
+    const solutionBtn2 = document.getElementById('solution-btn-2');
+    const solutionDiv2 = document.getElementById('solution-div-2');
+    solutionBtn2.addEventListener('click', () => {
+        solutionDiv2.classList.toggle('hidden');
+        solutionBtn2.textContent = solutionDiv2.classList.contains('hidden') ? 'Show Solution' : 'Hide Solution';
+    });
+
+    const solutionBtn3 = document.getElementById('solution-btn-3');
+    const solutionDiv3 = document.getElementById('solution-div-3');
+    solutionBtn3.addEventListener('click', () => {
+        solutionDiv3.classList.toggle('hidden');
+        solutionBtn3.textContent = solutionDiv3.classList.contains('hidden') ? 'Show Solution' : 'Hide Solution';
+    });
+
+    const solutionBtn4 = document.getElementById('solution-btn-4');
+    const solutionDiv4 = document.getElementById('solution-div-4');
+    solutionBtn4.addEventListener('click', () => {
+        solutionDiv4.classList.toggle('hidden');
+        solutionBtn4.textContent = solutionDiv4.classList.contains('hidden') ? 'Show Solution' : 'Hide Solution';
+    });
+
+    const solutionBtn5 = document.getElementById('solution-btn-5');
+    const solutionDiv5 = document.getElementById('solution-div-5');
+    solutionBtn5.addEventListener('click', () => {
+        solutionDiv5.classList.toggle('hidden');
+        solutionBtn5.textContent = solutionDiv5.classList.contains('hidden') ? 'Show Solution' : 'Hide Solution';
+    });
+
+    const ctx = document.getElementById('timeChart').getContext('2d');
+    const timeChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '11:00'],
+            datasets: [{
+                label: 'Failed Logins',
+                data: [5, 8, 15, 9, 12, 7, 6, 10, 18, 22, 14, 11],
+                backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                borderColor: 'rgba(220, 38, 38, 0.8)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Events'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Time of Day (Hourly bins)'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: '#f8f8f8',
+                    titleColor: '#333333',
+                    bodyColor: '#555555',
+                    padding: 10,
+                    cornerRadius: 4,
+                }
+            }
+        }
+    });
+
+    const sections = document.querySelectorAll('main section');
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').substring(1) === entry.target.id) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        });
+    }, { rootMargin: '-50% 0px -50% 0px', threshold: 0 });
+
+    sections.forEach(section => {
+        observer.observe(section);
+    });
+});
+</script>
+
+</body>
+</html>
