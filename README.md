@@ -18,4 +18,4 @@ This is a simple static website for Kusto learning materials. The site is hosted
     git push
     ```
 
-Your changes will be live within a few minutes. You can check the deployment status in the "Actions" tab of this GitHub repository.
+Changes will be live within a few minutes. You can check the deployment status in the "Actions" tab of this GitHub repository.

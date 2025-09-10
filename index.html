@@ -137,18 +137,27 @@
 
         <main class="flex-1 p-4 sm:p-6 md:p-10">
             <header class="mb-10">
-                <h1 class="text-4xl font-bold text-blue-900">Interactive KQL Session 1</h1>
-                <p class="mt-2 text-lg text-blue-700">A hands-on guide to Kusto Query Language using the public <code class="bg-blue-100 text-blue-800 px-1 rounded">help.kusto.windows.net</code> cluster.</p>
+                <div class="flex items-center gap-4 mb-2">
+                    <img src="icons/analytics/10145-icon-service-Azure-Data-Explorer-Clusters.svg" alt="Azure Data Explorer" class="w-12 h-12">
+                    <h1 class="text-4xl font-bold text-blue-900">Interactive KQL Session 1</h1>
+                </div>
+                <p class="mt-2 text-lg text-gray-600">A hands-on guide to Kusto Query Language using the public <code class="bg-blue-100 text-blue-800 px-1 rounded">help.kusto.windows.net</code> cluster.</p>
             </header>
             
             <section id="introduction" class="mb-12 space-y-6 scroll-mt-20">
-                <h2 class="text-3xl font-semibold border-b-2 border-blue-200 pb-2 text-blue-900">Session 1: Introduction</h2>
+                <div class="flex items-center gap-3 mb-4">
+                    <img src="icons/general/10005-icon-service-Information.svg" alt="Information" class="w-8 h-8">
+                    <h2 class="text-3xl font-semibold border-b-2 border-blue-200 pb-2 text-blue-900">Session 1: Introduction</h2>
+                </div>
                 <p class="text-gray-700">Welcome to the first session of our interactive Kusto Query Language (KQL) guide! In this session, our goal is to get you comfortable with the fundamental building blocks of KQL. By the end, you'll be able to navigate tables, filter data, and perform basic analysis.</p>
                 <p class="text-gray-700">We will focus our learning primarily on two tables: <code class="bg-blue-100 text-blue-800 px-1 rounded">AuthenticationEvents</code> and <code class="bg-blue-100 text-blue-800 px-1 rounded">Employees</code>. We'll also briefly use <code class="bg-blue-100 text-blue-800 px-1 rounded">InboundBrowsing</code> and <code class="bg-blue-100 text-blue-800 px-1 rounded">OutboundBrowsing</code> to explore advanced concepts.</p>
             </section>
 
             <section id="part1" class="mb-12 space-y-6 scroll-mt-20">
-                <h2 class="text-3xl font-semibold border-b-2 border-blue-200 pb-2 text-blue-900">Part 1: The Basics - Core Operators & Tables</h2>
+                <div class="flex items-center gap-3 mb-4">
+                    <img src="icons/general/10841-icon-service-Table.svg" alt="Tables" class="w-8 h-8">
+                    <h2 class="text-3xl font-semibold border-b-2 border-blue-200 pb-2 text-blue-900">Part 1: The Basics - Core Operators & Tables</h2>
+                </div>
                 <p class="text-gray-700">This section covers the fundamental concepts of KQL. We'll explore the data flow model, connect to a database, and learn how to safely preview data from tables, which is the first step in any data exploration task.</p>
                 
                 <div>
@@ -188,7 +197,10 @@
             </section>
 
             <section id="part2" class="mb-12 space-y-6 scroll-mt-20">
-                <h2 class="text-3xl font-semibold border-b-2 border-blue-200 pb-2 text-blue-900">Part 2: Filtering & Projecting</h2>
+                <div class="flex items-center gap-3 mb-4">
+                    <img src="icons/general/10834-icon-service-Search.svg" alt="Search & Filter" class="w-8 h-8">
+                    <h2 class="text-3xl font-semibold border-b-2 border-blue-200 pb-2 text-blue-900">Part 2: Filtering & Projecting</h2>
+                </div>
                 <p class="text-gray-700">In this section, you'll learn how to get the specific data you need. We will cover filtering rows based on conditions using the powerful <code class="bg-blue-100 text-blue-800 px-1 rounded">where</code> operator, and then selecting, renaming, or even creating new columns using <code class="bg-blue-100 text-blue-800 px-1 rounded">project</code> and <code class="bg-blue-100 text-blue-800 px-1 rounded">extend</code>.</p>
 
                 <div>
@@ -227,15 +239,19 @@
                             <div class="flex space-x-2 absolute top-2 right-2">
                                 <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
                             </div>
-                            <pre><code><span class="kql-comment">// This works because "Invalid" is a word in the 'details' column</span>
+                            <pre><code><span class="kql-comment">// This works because "fail" is a word in the 'result' column</span>
 <span class="kql-table">AuthenticationEvents</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> details <span class="kql-keyword">contains</span> <span class="kql-string">"Invalid"</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> result <span class="kql-keyword">contains</span> <span class="kql-string">"fail"</span>
 <span class="kql-pipe">|</span> <span class="kql-function">take</span> 10</code></pre>
                         </div>
                          <div class="code-block relative rounded-lg p-4 font-mono text-sm">
                             <div class="flex space-x-2 absolute top-2 right-2">
                                 <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
                             </div>
+                            <pre><code><span class="kql-comment">// This doesn't work... explain why</span>
+<span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> result <span class="kql-keyword">has</span> <span class="kql-string">"fail"</span>
+<span class="kql-pipe">|</span> <span class="kql-function">take</span> 10</code></pre>
                             <pre><code><span class="kql-comment">// 'has' is faster and also works with whole words</span>
 <span class="kql-table">AuthenticationEvents</span>
 <span class="kql-pipe">|</span> <span class="kql-keyword">where</span> details <span class="kql-keyword">has</span> <span class="kql-string">"Invalid"</span>
@@ -252,6 +268,7 @@
                             <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
                         </div>
                         <pre><code><span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">extend</span> timestamp = <span class="kql-function">todatetime</span>(timestamp)
 <span class="kql-pipe">|</span> <span class="kql-keyword">extend</span> event_hour <span class="kql-pipe">=</span> <span class="kql-function">bin</span>(timestamp, 1h)
 <span class="kql-pipe">|</span> <span class="kql-keyword">project</span> timestamp, event_hour, result
 <span class="kql-pipe">|</span> <span class="kql-function">take</span> 10</code></pre>
@@ -260,7 +277,10 @@
             </section>
             
             <section id="part3" class="mb-12 space-y-6 scroll-mt-20">
-                <h2 class="text-3xl font-semibold border-b-2 border-blue-200 pb-2 text-blue-900">Part 3: Aggregation & Time-Based Analysis</h2>
+                <div class="flex items-center gap-3 mb-4">
+                    <img src="icons/analytics/02189-icon-service-Azure-Workbooks.svg" alt="Analytics & Visualization" class="w-8 h-8">
+                    <h2 class="text-3xl font-semibold border-b-2 border-blue-200 pb-2 text-blue-900">Part 3: Aggregation & Time-Based Analysis</h2>
+                </div>
                 <p class="text-gray-700">KQL includes a rich library of functions for manipulating data. Here, we'll cover common string and datetime functions. We will also visualize time-series data by grouping events into time buckets, a crucial technique for trend analysis.</p>
                 
                 <div>
@@ -271,7 +291,7 @@
                             <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
                         </div>
                         <pre><code><span class="kql-table">InboundBrowsing</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> timestamp <span class="kql-pipe">&gt;</span> <span class="kql-function">ago</span>(7d)
+<span class="kql-pipe">|</span> <span class="kql-keyword">extend</span> timestamp = <span class="kql-function">todatetime</span>(timestamp)
 <span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> <span class="kql-function">count()</span> <span class="kql-keyword">by</span> <span class="kql-function">bin</span>(timestamp, 1h)
 <span class="kql-pipe">|</span> <span class="kql-function">render</span> timechart</code></pre>
                     </div>
@@ -316,7 +336,10 @@
             </section>
             
             <section id="part4" class="mb-12 space-y-6 scroll-mt-20">
-                <h2 class="text-3xl font-semibold border-b-2 border-blue-200 pb-2 text-blue-900">Part 4: Joining Tables</h2>
+                <div class="flex items-center gap-3 mb-4">
+                    <img src="icons/general/10831-icon-service-Resource-Linked.svg" alt="Join Tables" class="w-8 h-8">
+                    <h2 class="text-3xl font-semibold border-b-2 border-blue-200 pb-2 text-blue-900">Part 4: Joining Tables</h2>
+                </div>
                 <p class="text-gray-700">This section focuses on how to combine information from multiple tables to build a more complete picture of events.</p>
                 
                 <div>
@@ -326,12 +349,12 @@
                         <div class="flex space-x-2 absolute top-2 right-2">
                             <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
                         </div>
-                        <pre><code><span class="kql-comment">// Find C-Level employees with failed logins</span>
+                        <pre><code><span class="kql-comment">// Find IT associate employees with failed logins</span>
 <span class="kql-table">AuthenticationEvents</span>
 <span class="kql-pipe">|</span> <span class="kql-keyword">where</span> result <span class="kql-pipe">==</span> <span class="kql-string">"Failed Login"</span>
 <span class="kql-pipe">|</span> <span class="kql-keyword">join</span> kind<span class="kql-pipe">=</span>inner (
     <span class="kql-table">Employees</span>
-    <span class="kql-pipe">|</span> <span class="kql-keyword">where</span> role <span class="kql-pipe">==</span> <span class="kql-string">"C-Level"</span>
+    <span class="kql-pipe">|</span> <span class="kql-keyword">where</span> role <span class="kql-pipe">==</span> <span class="kql-string">"IT associate"</span>
 ) <span class="kql-keyword">on</span> username
 <span class="kql-pipe">|</span> <span class="kql-keyword">project</span> timestamp, employee_name <span class="kql-pipe">=</span> name</code></pre>
                     </div>
@@ -354,7 +377,10 @@
             </section>
             
             <section id="part5" class="mb-12 space-y-6 scroll-mt-20">
-                <h2 class="text-3xl font-semibold border-b-2 border-blue-200 pb-2 text-blue-900">Part 5: Advanced Concepts</h2>
+                <div class="flex items-center gap-3 mb-4">
+                    <img src="icons/general/10805-icon-service-Gear.svg" alt="Advanced Features" class="w-8 h-8">
+                    <h2 class="text-3xl font-semibold border-b-2 border-blue-200 pb-2 text-blue-900">Part 5: Advanced Concepts</h2>
+                </div>
                  <p class="text-gray-700">To write cleaner and more powerful queries, KQL provides features like variables and in-memory tables. In this section, you'll learn how to use <code class="bg-blue-100 text-blue-800 px-1 rounded">let</code> statements to define reusable expressions and <code class="bg-blue-100 text-blue-800 px-1 rounded">datatable</code> to create temporary tables for filtering or testing.</p>
                 
                  <div>
@@ -396,11 +422,14 @@ FailedLogins
             </section>
 
             <section id="part6" class="mb-12 space-y-6 scroll-mt-20">
-                <h2 class="text-3xl font-semibold border-b-2 border-blue-200 pb-2 text-blue-900">Part 6: Challenge Queries</h2>
+                <div class="flex items-center gap-3 mb-4">
+                    <img src="icons/general/10817-icon-service-Load-Test.svg" alt="Challenge & Practice" class="w-8 h-8">
+                    <h2 class="text-3xl font-semibold border-b-2 border-blue-200 pb-2 text-blue-900">Part 6: Challenge Queries</h2>
+                </div>
                 <p class="text-gray-700">Now it's time to put everything together. These challenges require you to combine filtering, aggregation, and joining to find key insights in the data. Try to solve them yourself before revealing the solution.</p>
 
                 <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
-                    <p class="font-semibold text-blue-800">Challenge 1: Find the top 3 users with the most failed logins in the last 7 days.</p>
+                    <p class="font-semibold text-gray-800">Challenge 1: Find the top 3 users with the most failed logins in the last 7 days.</p>
                 </div>
                 <button id="solution-btn-1" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200">Show Solution</button>
                 <div id="solution-div-1" class="hidden mt-4">
@@ -417,7 +446,7 @@ FailedLogins
                 </div>
 
                 <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg mt-8">
-                    <p class="font-semibold text-blue-800">Challenge 2: Find the top 10 IP addresses with the most authentication attempts.</p>
+                    <p class="font-semibold text-gray-800">Challenge 2: Find the top 10 IP addresses with the most authentication attempts.</p>
                 </div>
                 <button id="solution-btn-2" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200">Show Solution</button>
                 <div id="solution-div-2" class="hidden mt-4">
@@ -432,7 +461,7 @@ FailedLogins
                 </div>
 
                 <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg mt-8">
-                    <p class="font-semibold text-blue-800">Challenge 3: Find the top 10 users with the most failed logins and show their full name and role.</p>
+                    <p class="font-semibold text-gray-800">Challenge 3: Find the top 10 users with the most failed logins and show their full name and role.</p>
                 </div>
                 <button id="solution-btn-3" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200">Show Solution</button>
                 <div id="solution-div-3" class="hidden mt-4">
@@ -450,7 +479,7 @@ FailedLogins
                 </div>
 
                 <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg mt-8">
-                    <p class="font-semibold text-blue-800">Challenge 4: Find the earliest and latest authentication event for each user.</p>
+                    <p class="font-semibold text-gray-800">Challenge 4: Find the earliest and latest authentication event for each user.</p>
                 </div>
                 <button id="solution-btn-4" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200">Show Solution</button>
                 <div id="solution-div-4" class="hidden mt-4">
@@ -468,7 +497,7 @@ FailedLogins
                 </div>
 
                 <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg mt-8">
-                    <p class="font-semibold text-blue-800">Challenge 5: Find all users with successful logins from China and, from that list, find which of them also have successful logins from Russia.</p>
+                    <p class="font-semibold text-gray-800">Challenge 5: Find all users with successful logins from China and, from that list, find which of them also have successful logins from Russia.</p>
                 </div>
                 <button id="solution-btn-5" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200">Show Solution</button>
                 <div id="solution-div-5" class="hidden mt-4">
