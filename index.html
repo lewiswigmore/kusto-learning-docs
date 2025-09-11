@@ -13,7 +13,7 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #fefefe;
+            background-color: #fafaf9;
         }
         .kql-keyword { color: #1e40af; }
         .kql-pipe { color: #374151; }
@@ -27,9 +27,14 @@
             font-weight: 600;
         }
         .code-block {
-            background-color: #f8fafc;
+            background-color: #ffffff;
             color: #374151;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+        .nav-link:hover {
+            transform: translateX(2px);
+            transition: all 0.2s ease-in-out;
         }
         .chart-container {
             position: relative;
@@ -114,56 +119,153 @@
         }
     </style>
 </head>
-<body class="text-gray-800 bg-white">
+<body class="text-gray-800 bg-stone-50">
 
     <div class="flex min-h-screen">
-        <aside class="w-64 sticky top-0 h-screen bg-blue-50 border-r border-blue-100 p-4 hidden lg:block overflow-y-auto">
-            <h2 class="text-lg font-bold mb-4 text-blue-900">Session Guide</h2>
-            <nav id="desktop-nav" class="space-y-2">
-                <details open class="bg-white rounded-lg shadow-sm border border-blue-100">
-                    <summary class="nav-link block px-4 py-3 text-blue-800 rounded-lg hover:bg-blue-100 cursor-pointer font-semibold transition-colors duration-200">Session 1: Introduction</summary>
-                    <div class="pb-2 space-y-1">
-                        <a href="#introduction" class="nav-link block px-6 py-2 text-blue-700 hover:bg-blue-50 hover:text-blue-900 transition-colors duration-200 text-sm">Introduction</a>
-                        <a href="#part1" class="nav-link block px-6 py-2 text-blue-700 hover:bg-blue-50 hover:text-blue-900 transition-colors duration-200 text-sm">1. KQL Basics</a>
-                        <a href="#part2" class="nav-link block px-6 py-2 text-blue-700 hover:bg-blue-50 hover:text-blue-900 transition-colors duration-200 text-sm">2. Filtering & Projecting</a>
-                        <a href="#part3" class="nav-link block px-6 py-2 text-blue-700 hover:bg-blue-50 hover:text-blue-900 transition-colors duration-200 text-sm">3. Aggregation & Time</a>
-                        <a href="#part4" class="nav-link block px-6 py-2 text-blue-700 hover:bg-blue-50 hover:text-blue-900 transition-colors duration-200 text-sm">4. Joining Tables</a>
-                        <a href="#part5" class="nav-link block px-6 py-2 text-blue-700 hover:bg-blue-50 hover:text-blue-900 transition-colors duration-200 text-sm">5. Advanced Concepts</a>
-                        <a href="#part6" class="nav-link block px-6 py-2 text-blue-700 hover:bg-blue-50 hover:text-blue-900 transition-colors duration-200 text-sm">6. Challenge Queries</a>
+        <aside class="w-72 sticky top-0 h-screen bg-white border-r border-stone-200 shadow-sm hidden lg:block overflow-y-auto">
+            <div class="p-6 border-b border-stone-200">
+                <h2 class="text-xl font-bold text-gray-900">KQL Learning Guide</h2>
+                <p class="text-sm text-gray-500 mt-1">Interactive Session 1</p>
+            </div>
+            <nav id="desktop-nav" class="p-4">
+                <div class="space-y-1">
+                    <div class="mb-4">
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Contents</h3>
+                        <div class="space-y-1">
+                            <a href="#introduction" class="nav-link group flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-all duration-200">
+                                <span class="w-2 h-2 bg-blue-400 rounded-full mr-3 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                                Introduction
+                            </a>
+                            <a href="#part1" class="nav-link group flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-all duration-200">
+                                <span class="w-2 h-2 bg-blue-400 rounded-full mr-3 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                                KQL Basics
+                            </a>
+                            <a href="#part2" class="nav-link group flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-all duration-200">
+                                <span class="w-2 h-2 bg-blue-400 rounded-full mr-3 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                                Filtering & Projecting
+                            </a>
+                            <a href="#part3" class="nav-link group flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-all duration-200">
+                                <span class="w-2 h-2 bg-blue-400 rounded-full mr-3 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                                Aggregation & Time
+                            </a>
+                            <a href="#part4" class="nav-link group flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-all duration-200">
+                                <span class="w-2 h-2 bg-blue-400 rounded-full mr-3 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                                Joining Tables
+                            </a>
+                            <a href="#part5" class="nav-link group flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-all duration-200">
+                                <span class="w-2 h-2 bg-blue-400 rounded-full mr-3 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                                Advanced Concepts
+                            </a>
+                            <a href="#part6" class="nav-link group flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-all duration-200">
+                                <span class="w-2 h-2 bg-blue-400 rounded-full mr-3 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                                Challenge Queries
+                            </a>
+                        </div>
                     </div>
-                </details>
+                </div>
             </nav>
         </aside>
 
-        <main class="flex-1 p-4 sm:p-6 md:p-10">
-            <header class="mb-10">
-                <div class="flex items-center gap-4 mb-2">
-                    <img src="icons/analytics/10145-icon-service-Azure-Data-Explorer-Clusters.svg" alt="Azure Data Explorer" class="w-12 h-12">
-                    <h1 class="text-4xl font-bold text-blue-900">Interactive KQL Session 1</h1>
-                </div>
-                <p class="mt-2 text-lg text-gray-600">A hands-on guide to Kusto Query Language using the public <code class="bg-blue-100 text-blue-800 px-1 rounded">help.kusto.windows.net</code> cluster.</p>
-            </header>
+        <main class="flex-1 bg-white shadow-sm">
+            <div class="max-w-4xl mx-auto p-8 lg:p-12">
+                <header class="mb-12">
+                    <div class="border-b border-stone-200 pb-8">
+                        <h1 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Interactive KQL Session 1</h1>
+                        <p class="text-lg text-gray-600 max-w-3xl">A hands-on guide to Kusto Query Language using the public <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">help.kusto.windows.net</code> cluster.</p>
+                    </div>
+                </header>
             
-            <section id="introduction" class="mb-12 space-y-6 scroll-mt-20">
-                <div class="flex items-center gap-3 mb-4">
-                    <img src="icons/general/10005-icon-service-Information.svg" alt="Information" class="w-8 h-8">
-                    <h2 class="text-3xl font-semibold border-b-2 border-blue-200 pb-2 text-blue-900">Session 1: Introduction</h2>
+            <section id="introduction" class="mb-16 scroll-mt-20">
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-8 mb-8">
+                    <div class="flex items-center mb-4">
+                        <div class="w-3 h-8 bg-blue-500 rounded-full mr-4"></div>
+                        <h2 class="text-3xl font-bold text-gray-900">Session 1: Introduction</h2>
+                    </div>
+                    <div class="space-y-4 text-gray-700 leading-relaxed">
+                        <p>Welcome to the first session of our interactive Kusto Query Language (KQL) guide! In this session, our goal is to get you comfortable with the fundamental building blocks of KQL. By the end, you'll be able to navigate tables, filter data, and perform basic analysis.</p>
+                        <p>We will focus our learning primarily on two tables: <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">AuthenticationEvents</code> and <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">Employees</code>. We'll also briefly use <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">InboundBrowsing</code> and <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">OutboundBrowsing</code> to explore advanced concepts.</p>
+                    </div>
                 </div>
-                <p class="text-gray-700">Welcome to the first session of our interactive Kusto Query Language (KQL) guide! In this session, our goal is to get you comfortable with the fundamental building blocks of KQL. By the end, you'll be able to navigate tables, filter data, and perform basic analysis.</p>
-                <p class="text-gray-700">We will focus our learning primarily on two tables: <code class="bg-blue-100 text-blue-800 px-1 rounded">AuthenticationEvents</code> and <code class="bg-blue-100 text-blue-800 px-1 rounded">Employees</code>. We'll also briefly use <code class="bg-blue-100 text-blue-800 px-1 rounded">InboundBrowsing</code> and <code class="bg-blue-100 text-blue-800 px-1 rounded">OutboundBrowsing</code> to explore advanced concepts.</p>
+                
+                <!-- Getting Started Section -->
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-8 mb-8">
+                    <div class="flex items-center mb-6">
+                        <div class="w-3 h-8 bg-green-500 rounded-full mr-4"></div>
+                        <h3 class="text-2xl font-bold text-gray-900">Getting Started: Connect to the Practice Environment</h3>
+                    </div>
+                    <div class="space-y-6">
+                        <p class="text-gray-700 leading-relaxed">
+                            Before diving into the queries, you'll need to connect to our practice environment. We'll be using the public 
+                            <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">help.kusto.windows.net</code> cluster, 
+                            which contains sample data perfect for learning KQL.
+                        </p>
+                        
+                        <div class="bg-white border border-green-200 rounded-lg p-6">
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4">🚀 Quick Setup Steps:</h4>
+                            <ol class="list-decimal list-inside space-y-3 text-gray-700">
+                                <li class="flex items-start">
+                                    <span class="font-semibold mr-2">1.</span>
+                                    <div>
+                                        Open your browser and navigate to: 
+                                        <a href="https://aka.ms/adx" target="_blank" rel="noopener noreferrer" 
+                                           class="inline-flex items-center ml-2 px-3 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                                            🔗 aka.ms/adx
+                                            <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                            </svg>
+                                        </a>
+                                    </div>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="font-semibold mr-2">2.</span>
+                                    <div>Sign in with your Microsoft account (or create one if needed)</div>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="font-semibold mr-2">3.</span>
+                                    <div>
+                                        Connect to the cluster by entering: 
+                                        <code class="bg-gray-100 text-gray-800 px-2 py-1 rounded-md font-mono text-sm ml-1">help.kusto.windows.net</code>
+                                    </div>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="font-semibold mr-2">4.</span>
+                                    <div>You're ready to start querying! Try copying and pasting the examples below.</div>
+                                </li>
+                            </ol>
+                        </div>
+                        
+                        <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm text-amber-700">
+                                        <strong>Note:</strong> The help.kusto.windows.net cluster is a public learning environment. 
+                                        Don't use it for sensitive data - stick to the practice queries in this guide!
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </section>
 
-            <section id="part1" class="mb-12 space-y-6 scroll-mt-20">
-                <div class="flex items-center gap-3 mb-4">
-                    <img src="icons/general/10841-icon-service-Table.svg" alt="Tables" class="w-8 h-8">
-                    <h2 class="text-3xl font-semibold border-b-2 border-blue-200 pb-2 text-blue-900">Part 1: The Basics - Core Operators & Tables</h2>
+            <section id="part1" class="mb-16 scroll-mt-20">
+                <div class="mb-8">
+                    <div class="flex items-center mb-4">
+                        <div class="w-3 h-8 bg-emerald-500 rounded-full mr-4"></div>
+                        <h2 class="text-3xl font-bold text-gray-900">Part 1: The Basics - Core Operators & Tables</h2>
+                    </div>
+                    <p class="text-lg text-gray-600 mb-6 leading-relaxed">This section covers the fundamental concepts of KQL. We'll explore the data flow model, connect to a database, and learn how to safely preview data from tables, which is the first step in any data exploration task.</p>
                 </div>
-                <p class="text-gray-700">This section covers the fundamental concepts of KQL. We'll explore the data flow model, connect to a database, and learn how to safely preview data from tables, which is the first step in any data exploration task.</p>
                 
                 <div>
-                    <h3 class="text-xl font-medium mb-2">1. Concept: Operators and Piping</h3>
-                    <p class="mb-4">KQL is a data flow language. You start with a data source (like a table), and then use the pipe character <code class="bg-blue-100 text-blue-800 px-1 rounded">|</code> to pass that data through a series of operators. Each operator transforms the data and passes its output to the next one in the chain.</p>
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm shadow-sm">
+                    <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">1. Concept: Operators and Piping</h3>
+                    <p class="mb-6">KQL is a data flow language. You start with a data source (like a table), and then use the pipe character <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">|</code> to pass that data through a series of operators. Each operator transforms the data and passes its output to the next one in the chain.</p>
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6 shadow-sm">
                         <div class="flex space-x-2 absolute top-2 right-2">
                             <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors duration-200">Copy</button>
                         </div>
@@ -172,9 +274,9 @@
                 </div>
 
                 <div>
-                    <h3 class="text-xl font-medium mb-2">2. Viewing Table Schemas</h3>
-                    <p class="mb-4">Before querying a table, you must understand its structure. The <code class="bg-blue-100 text-blue-800 px-1 rounded">getschema</code> operator shows you all the column names and their corresponding data types (<code class="bg-blue-100 text-blue-800 px-1 rounded">string</code>, <code class="bg-blue-100 text-blue-800 px-1 rounded">int</code>, etc.).</p>
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm shadow-sm">
+                    <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">2. Viewing Table Schemas</h3>
+                    <p class="mb-6">Before querying a table, you must understand its structure. The <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">getschema</code> operator shows you all the column names and their corresponding data types (<code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">string</code>, <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">int</code>, etc.).</p>
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6 shadow-sm">
                         <div class="flex space-x-2 absolute top-2 right-2">
                             <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors duration-200">Copy</button>
                         </div>
@@ -184,9 +286,9 @@
                 </div>
 
                 <div>
-                    <h3 class="text-xl font-medium mb-2">3. Best Practices for Previewing Data</h3>
-                    <p class="mb-4">Never query a full table without limiting the results, as it can be slow and resource-intensive. Use the <code class="bg-blue-100 text-blue-800 px-1 rounded">take</code> operator to grab a small, random sample of records to inspect the data safely.</p>
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm shadow-sm">
+                    <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">3. Best Practices for Previewing Data</h3>
+                    <p class="mb-6">Never query a full table without limiting the results, as it can be slow and resource-intensive. Use the <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">take</code> operator to grab a small, random sample of records to inspect the data safely.</p>
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6 shadow-sm">
                         <div class="flex space-x-2 absolute top-2 right-2">
                             <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors duration-200">Copy</button>
                         </div>
@@ -196,17 +298,19 @@
                 </div>
             </section>
 
-            <section id="part2" class="mb-12 space-y-6 scroll-mt-20">
-                <div class="flex items-center gap-3 mb-4">
-                    <img src="icons/general/10834-icon-service-Search.svg" alt="Search & Filter" class="w-8 h-8">
-                    <h2 class="text-3xl font-semibold border-b-2 border-blue-200 pb-2 text-blue-900">Part 2: Filtering & Projecting</h2>
+            <section id="part2" class="mb-16 scroll-mt-20">
+                <div class="mb-8">
+                    <div class="flex items-center mb-4">
+                        <div class="w-3 h-8 bg-purple-500 rounded-full mr-4"></div>
+                        <h2 class="text-3xl font-bold text-gray-900">Part 2: Filtering & Projecting</h2>
+                    </div>
+                    <p class="text-lg text-gray-600 mb-6 leading-relaxed">In this section, you'll learn how to get the specific data you need. We will cover filtering rows based on conditions using the powerful <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">where</code> operator, and then selecting, renaming, or even creating new columns using <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">project</code> and <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">extend</code>.</p>
                 </div>
-                <p class="text-gray-700">In this section, you'll learn how to get the specific data you need. We will cover filtering rows based on conditions using the powerful <code class="bg-blue-100 text-blue-800 px-1 rounded">where</code> operator, and then selecting, renaming, or even creating new columns using <code class="bg-blue-100 text-blue-800 px-1 rounded">project</code> and <code class="bg-blue-100 text-blue-800 px-1 rounded">extend</code>.</p>
 
                 <div>
-                    <h3 class="text-xl font-medium mb-2">1. Filtering with <code class="text-lg">| where</code></h3>
-                    <p class="mb-4">The <code class="bg-blue-100 text-blue-800 px-1 rounded">where</code> operator filters the data to only include rows that match your specified conditions. You can perform exact matches, partial matches, and check for empty values.</p>
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                    <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">1. Filtering with <code class="text-lg">| where</code></h3>
+                    <p class="mb-6">The <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">where</code> operator filters the data to only include rows that match your specified conditions. You can perform exact matches, partial matches, and check for empty values.</p>
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
                         <div class="flex space-x-2 absolute top-2 right-2">
                             <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
                         </div>
@@ -217,9 +321,9 @@
                 </div>
 
                 <div>
-                    <h4 class="text-lg font-medium mb-2">2. Optimization: Filter on Time First</h4>
-                    <p class="mb-4">For optimal performance, always apply your time-based filter as the **first** <code class="bg-blue-100 text-blue-800 px-1 rounded">where</code> statement in your query. The KQL engine is highly optimized to prune data partitions by time, which can dramatically reduce the amount of data processed by subsequent operators. This is a critical best practice for large datasets.</p>
-                     <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                    <h4 class="text-lg font-medium mb-4 mt-6">2. Optimization: Filter on Time First</h4>
+                    <p class="mb-6">For optimal performance, always apply your time-based filter as the **first** <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">where</code> statement in your query. The KQL engine is highly optimized to prune data partitions by time, which can dramatically reduce the amount of data processed by subsequent operators. This is a critical best practice for large datasets.</p>
+                     <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
                         <div class="flex space-x-2 absolute top-2 right-2">
                             <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
                         </div>
@@ -232,10 +336,10 @@
                 </div>
 
                 <div>
-                    <h4 class="text-lg font-medium mb-2">3. Partial String Matches: <code class="text-md">contains</code> vs. <code class="text-md">has</code></h4>
-                    <p class="mb-4">Both operators search for substrings, but they work differently. <code class="bg-blue-100 text-blue-800 px-1 rounded">contains</code> performs a full scan, while <code class="bg-blue-100 text-blue-800 px-1 rounded">has</code> uses a pre-built index for much faster searches on whole words (tokens).</p>
+                    <h4 class="text-lg font-medium mb-4 mt-6">3. Partial String Matches: <code class="text-md">contains</code> vs. <code class="text-md">has</code></h4>
+                    <p class="mb-6">Both operators search for substrings, but they work differently. <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">contains</code> performs a full scan, while <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">has</code> uses a pre-built index for much faster searches on whole words (tokens).</p>
                     <div class="grid md:grid-cols-2 gap-4">
-                        <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                        <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
                             <div class="flex space-x-2 absolute top-2 right-2">
                                 <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
                             </div>
@@ -244,26 +348,32 @@
 <span class="kql-pipe">|</span> <span class="kql-keyword">where</span> result <span class="kql-keyword">contains</span> <span class="kql-string">"fail"</span>
 <span class="kql-pipe">|</span> <span class="kql-function">take</span> 10</code></pre>
                         </div>
-                         <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                         <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
                             <div class="flex space-x-2 absolute top-2 right-2">
                                 <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
                             </div>
-                            <pre><code><span class="kql-comment">// This doesn't work... explain why</span>
+                            <pre><code><span class="kql-comment">// This query won't return results - 'has' requires exact word matches</span>
 <span class="kql-table">AuthenticationEvents</span>
 <span class="kql-pipe">|</span> <span class="kql-keyword">where</span> result <span class="kql-keyword">has</span> <span class="kql-string">"fail"</span>
 <span class="kql-pipe">|</span> <span class="kql-function">take</span> 10</code></pre>
-                            <pre><code><span class="kql-comment">// 'has' is faster and also works with whole words</span>
-<span class="kql-table">AuthenticationEvents</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> details <span class="kql-keyword">has</span> <span class="kql-string">"Invalid"</span>
-<span class="kql-pipe">|</span> <span class="kql-function">take</span> 10</code></pre>
                         </div>
+                    </div>
+                    
+                    <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg mt-4">
+                        <p class="text-sm text-gray-700">
+                            <strong>Why the `has` query doesn't work:</strong> The `has` operator looks for complete words (tokens) separated by word boundaries. 
+                            In the AuthenticationEvents table, the `result` column contains values like "Failed" or "Success" - complete words. 
+                            When you search for `has "fail"`, it's looking for the exact word "fail", but the actual value is "Failed". 
+                            Since "fail" is not a complete word in the data, `has` won't find it. Use `contains "fail"` instead, 
+                            or use `has "Failed"` if you want the performance benefit of the indexed search.
+                        </p>
                     </div>
                 </div>
 
                 <div>
-                    <h3 class="text-xl font-medium mb-2">4. Selecting & Extending Columns</h3>
-                    <p class="mb-4"><code class="bg-blue-100 text-blue-800 px-1 rounded">project</code> lets you pick which columns to display and rename them. <code class="bg-blue-100 text-blue-800 px-1 rounded">extend</code> creates a new column while keeping the existing ones.</p>
-                     <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                    <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">4. Selecting & Extending Columns</h3>
+                    <p class="mb-6"><code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">project</code> lets you pick which columns to display and rename them. <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">extend</code> creates a new column while keeping the existing ones.</p>
+                     <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
                         <div class="flex space-x-2 absolute top-2 right-2">
                             <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
                         </div>
@@ -276,17 +386,19 @@
                 </div>
             </section>
             
-            <section id="part3" class="mb-12 space-y-6 scroll-mt-20">
-                <div class="flex items-center gap-3 mb-4">
-                    <img src="icons/analytics/02189-icon-service-Azure-Workbooks.svg" alt="Analytics & Visualization" class="w-8 h-8">
-                    <h2 class="text-3xl font-semibold border-b-2 border-blue-200 pb-2 text-blue-900">Part 3: Aggregation & Time-Based Analysis</h2>
+            <section id="part3" class="mb-16 scroll-mt-20">
+                <div class="mb-8">
+                    <div class="flex items-center mb-4">
+                        <div class="w-3 h-8 bg-green-500 rounded-full mr-4"></div>
+                        <h2 class="text-3xl font-bold text-gray-900">Part 3: Aggregation & Time-Based Analysis</h2>
+                    </div>
+                    <p class="text-lg text-gray-600 mb-6 leading-relaxed">KQL includes a rich library of functions for manipulating data. Here, we'll cover common string and datetime functions. We will also visualize time-series data by grouping events into time buckets, a crucial technique for trend analysis.</p>
                 </div>
-                <p class="text-gray-700">KQL includes a rich library of functions for manipulating data. Here, we'll cover common string and datetime functions. We will also visualize time-series data by grouping events into time buckets, a crucial technique for trend analysis.</p>
                 
                 <div>
-                    <h3 class="text-xl font-medium mb-2">1. Summarizing with <code class="text-lg">bin()</code> for Time Charts</h3>
-                    <p class="mb-4">The <code class="bg-blue-100 text-blue-800 px-1 rounded">bin()</code> function groups data into fixed time intervals (e.g., hours, days). When combined with <code class="bg-blue-100 text-blue-800 px-1 rounded">summarize</code> and <code class="bg-blue-100 text-blue-800 px-1 rounded">render timechart</code>, it's a powerful way to visualize trends.</p>
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                    <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">1. Summarizing with <code class="text-lg">bin()</code> for Time Charts</h3>
+                    <p class="mb-6">The <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">bin()</code> function groups data into fixed time intervals (e.g., hours, days). When combined with <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">summarize</code> and <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">render timechart</code>, it's a powerful way to visualize trends.</p>
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
                         <div class="flex space-x-2 absolute top-2 right-2">
                             <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
                         </div>
@@ -304,9 +416,9 @@
                 </div>
 
                 <div>
-                    <h3 class="text-xl font-medium mb-2">2. Advanced Aggregations</h3>
-                    <p class="mb-4">The <code class="bg-blue-100 text-blue-800 px-1 rounded">arg_max()</code> and <code class="bg-blue-100 text-blue-800 px-1 rounded">arg_min()</code> functions are powerful ways to find the most recent or earliest event for each item in a group. They return the entire row corresponding to the minimum or maximum value.</p>
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                    <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">2. Advanced Aggregations</h3>
+                    <p class="mb-6">The <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">arg_max()</code> and <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">arg_min()</code> functions are powerful ways to find the most recent or earliest event for each item in a group. They return the entire row corresponding to the minimum or maximum value.</p>
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
                         <div class="flex space-x-2 absolute top-2 right-2">
                             <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
                         </div>
@@ -321,10 +433,10 @@
                 </div>
 
                 <div>
-                    <h3 class="text-xl font-medium mb-2">3. Aggregating by IP Address</h3>
-                    <p class="mb-4">You can summarize by any column, including IP addresses, to find patterns in network activity. This query finds the top 10 IP addresses with the most authentication attempts.
+                    <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">3. Aggregating by IP Address</h3>
+                    <p class="mb-6">You can summarize by any column, including IP addresses, to find patterns in network activity. This query finds the top 10 IP addresses with the most authentication attempts.
                     </p>
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
                         <div class="flex space-x-2 absolute top-2 right-2">
                             <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
                         </div>
@@ -335,17 +447,19 @@
                 </div>
             </section>
             
-            <section id="part4" class="mb-12 space-y-6 scroll-mt-20">
-                <div class="flex items-center gap-3 mb-4">
-                    <img src="icons/general/10831-icon-service-Resource-Linked.svg" alt="Join Tables" class="w-8 h-8">
-                    <h2 class="text-3xl font-semibold border-b-2 border-blue-200 pb-2 text-blue-900">Part 4: Joining Tables</h2>
+            <section id="part4" class="mb-16 scroll-mt-20">
+                <div class="mb-8">
+                    <div class="flex items-center mb-4">
+                        <div class="w-3 h-8 bg-yellow-500 rounded-full mr-4"></div>
+                        <h2 class="text-3xl font-bold text-gray-900">Part 4: Joining Tables</h2>
+                    </div>
+                    <p class="text-lg text-gray-600 mb-6 leading-relaxed">This section focuses on how to combine information from multiple tables to build a more complete picture of events.</p>
                 </div>
-                <p class="text-gray-700">This section focuses on how to combine information from multiple tables to build a more complete picture of events.</p>
                 
                 <div>
-                    <h3 class="text-xl font-medium mb-2">1. The <code class="text-lg">join</code> Operator</h3>
-                    <p class="mb-4">The <code class="bg-blue-100 text-blue-800 px-1 rounded">join</code> operator combines rows from two tables based on a matching key column. The most common types are <code class="bg-blue-100 text-blue-800 px-1 rounded">inner</code> (returns only matching rows) and <code class="bg-blue-100 text-blue-800 px-1 rounded">leftouter</code> (returns all rows from the left table, plus matches from the right).</p>
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                    <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">1. The <code class="text-lg">join</code> Operator</h3>
+                    <p class="mb-6">The <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">join</code> operator combines rows from two tables based on a matching key column. The most common types are <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">inner</code> (returns only matching rows) and <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">leftouter</code> (returns all rows from the left table, plus matches from the right).</p>
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
                         <div class="flex space-x-2 absolute top-2 right-2">
                             <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
                         </div>
@@ -360,9 +474,9 @@
                     </div>
                 </div>
                 <div>
-                    <h3 class="text-xl font-medium mb-2">2. Challenge: Joining Failed Logins with Employee Data</h3>
-                    <p class="mb-4">This challenge builds on our previous lessons. First, find the top 10 users with the most failed logins. Then, join that result with the <code class="bg-blue-100 text-blue-800 px-1 rounded">Employees</code> table to see their full name and role. This is a common security analysis task.</p>
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                    <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">2. Challenge: Joining Failed Logins with Employee Data</h3>
+                    <p class="mb-6">This challenge builds on our previous lessons. First, find the top 10 users with the most failed logins. Then, join that result with the <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">Employees</code> table to see their full name and role. This is a common security analysis task.</p>
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
                         <div class="flex space-x-2 absolute top-2 right-2">
                             <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
                         </div>
@@ -376,17 +490,19 @@
                 </div>
             </section>
             
-            <section id="part5" class="mb-12 space-y-6 scroll-mt-20">
-                <div class="flex items-center gap-3 mb-4">
-                    <img src="icons/general/10805-icon-service-Gear.svg" alt="Advanced Features" class="w-8 h-8">
-                    <h2 class="text-3xl font-semibold border-b-2 border-blue-200 pb-2 text-blue-900">Part 5: Advanced Concepts</h2>
+            <section id="part5" class="mb-16 scroll-mt-20">
+                <div class="mb-8">
+                    <div class="flex items-center mb-4">
+                        <div class="w-3 h-8 bg-red-500 rounded-full mr-4"></div>
+                        <h2 class="text-3xl font-bold text-gray-900">Part 5: Advanced Concepts</h2>
+                    </div>
+                    <p class="text-lg text-gray-600 mb-6 leading-relaxed">To write cleaner and more powerful queries, KQL provides features like variables and in-memory tables. In this section, you'll learn how to use <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">let</code> statements to define reusable expressions and <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">datatable</code> to create temporary tables for filtering or testing.</p>
                 </div>
-                 <p class="text-gray-700">To write cleaner and more powerful queries, KQL provides features like variables and in-memory tables. In this section, you'll learn how to use <code class="bg-blue-100 text-blue-800 px-1 rounded">let</code> statements to define reusable expressions and <code class="bg-blue-100 text-blue-800 px-1 rounded">datatable</code> to create temporary tables for filtering or testing.</p>
                 
                  <div>
-                    <h3 class="text-xl font-medium mb-2">1. Reusable Expressions with <code class="text-lg">let</code></h3>
-                    <p class="mb-4">A <code class="bg-blue-100 text-blue-800 px-1 rounded">let</code> statement assigns a name to an expression or function. This is extremely useful for breaking complex queries into logical, readable parts.</p>
-                     <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                    <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">1. Reusable Expressions with <code class="text-lg">let</code></h3>
+                    <p class="mb-6">A <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">let</code> statement assigns a name to an expression or function. This is extremely useful for breaking complex queries into logical, readable parts.</p>
+                     <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
                         <div class="flex space-x-2 absolute top-2 right-2">
                             <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
                         </div>
@@ -403,9 +519,9 @@ FailedLogins
                 </div>
                 
                  <div>
-                    <h3 class="text-xl font-medium mb-2">2. In-Memory Tables with <code class="text-lg">datatable</code></h3>
-                    <p class="mb-4">The <code class="bg-blue-100 text-blue-800 px-1 rounded">datatable</code> operator lets you define a small, temporary table directly in your query. It's perfect for filtering against a known list of values, for example, a list of known malicious domains from a threat intelligence feed.</p>
-                     <div class="code-block relative rounded-lg p-4 font-mono text-sm">
+                    <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">2. In-Memory Tables with <code class="text-lg">datatable</code></h3>
+                    <p class="mb-6">The <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">datatable</code> operator lets you define a small, temporary table directly in your query. It's perfect for filtering against a known list of values, for example, a list of known malicious domains from a threat intelligence feed.</p>
+                     <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
                         <div class="flex space-x-2 absolute top-2 right-2">
                             <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
                         </div>
@@ -421,19 +537,21 @@ FailedLogins
                 </div>
             </section>
 
-            <section id="part6" class="mb-12 space-y-6 scroll-mt-20">
-                <div class="flex items-center gap-3 mb-4">
-                    <img src="icons/general/10817-icon-service-Load-Test.svg" alt="Challenge & Practice" class="w-8 h-8">
-                    <h2 class="text-3xl font-semibold border-b-2 border-blue-200 pb-2 text-blue-900">Part 6: Challenge Queries</h2>
+            <section id="part6" class="mb-16 scroll-mt-20">
+                <div class="mb-8">
+                    <div class="flex items-center mb-4">
+                        <div class="w-3 h-8 bg-indigo-500 rounded-full mr-4"></div>
+                        <h2 class="text-3xl font-bold text-gray-900">Part 6: Challenge Queries</h2>
+                    </div>
+                    <p class="text-lg text-gray-600 mb-6 leading-relaxed">Now it's time to put everything together. These challenges require you to combine filtering, aggregation, and joining to find key insights in the data. Try to solve them yourself before revealing the solution.</p>
                 </div>
-                <p class="text-gray-700">Now it's time to put everything together. These challenges require you to combine filtering, aggregation, and joining to find key insights in the data. Try to solve them yourself before revealing the solution.</p>
 
-                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
-                    <p class="font-semibold text-gray-800">Challenge 1: Find the top 3 users with the most failed logins in the last 7 days.</p>
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 p-6 rounded-xl shadow-sm">
+                    <p class="font-semibold text-gray-800 text-lg">Challenge 1: Find the top 3 users with the most failed logins in the last 7 days.</p>
                 </div>
-                <button id="solution-btn-1" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200">Show Solution</button>
+                <button id="solution-btn-1" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium shadow-sm mt-4 mb-2">Show Solution</button>
                 <div id="solution-div-1" class="hidden mt-4">
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm shadow-sm">
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6 shadow-sm">
                         <div class="flex space-x-2 absolute top-2 right-2">
                             <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors duration-200">Copy</button>
                         </div>
@@ -445,12 +563,12 @@ FailedLogins
                     </div>
                 </div>
 
-                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg mt-8">
-                    <p class="font-semibold text-gray-800">Challenge 2: Find the top 10 IP addresses with the most authentication attempts.</p>
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 p-6 rounded-xl shadow-sm mt-12">
+                    <p class="font-semibold text-gray-800 text-lg">Challenge 2: Find the top 10 IP addresses with the most authentication attempts.</p>
                 </div>
-                <button id="solution-btn-2" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200">Show Solution</button>
+                <button id="solution-btn-2" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors duration-200 font-medium shadow-sm mt-4 mb-2">Show Solution</button>
                 <div id="solution-div-2" class="hidden mt-4">
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm shadow-sm">
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6 shadow-sm">
                         <div class="flex space-x-2 absolute top-2 right-2">
                             <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors duration-200">Copy</button>
                         </div>
@@ -460,12 +578,12 @@ FailedLogins
                     </div>
                 </div>
 
-                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg mt-8">
-                    <p class="font-semibold text-gray-800">Challenge 3: Find the top 10 users with the most failed logins and show their full name and role.</p>
+                <div class="bg-gradient-to-r from-purple-50 to-violet-50 border border-purple-200 p-6 rounded-xl shadow-sm mt-12">
+                    <p class="font-semibold text-gray-800 text-lg">Challenge 3: Find the top 10 users with the most failed logins and show their full name and role.</p>
                 </div>
-                <button id="solution-btn-3" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200">Show Solution</button>
+                <button id="solution-btn-3" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors duration-200 font-medium shadow-sm mt-4 mb-2">Show Solution</button>
                 <div id="solution-div-3" class="hidden mt-4">
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm shadow-sm">
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6 shadow-sm">
                         <div class="flex space-x-2 absolute top-2 right-2">
                             <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors duration-200">Copy</button>
                         </div>
@@ -478,12 +596,12 @@ FailedLogins
                     </div>
                 </div>
 
-                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg mt-8">
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg mt-12">
                     <p class="font-semibold text-gray-800">Challenge 4: Find the earliest and latest authentication event for each user.</p>
                 </div>
-                <button id="solution-btn-4" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200">Show Solution</button>
+                <button id="solution-btn-4" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium shadow-sm mt-4 mb-2">Show Solution</button>
                 <div id="solution-div-4" class="hidden mt-4">
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm shadow-sm">
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6 shadow-sm">
                         <div class="flex space-x-2 absolute top-2 right-2">
                             <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors duration-200">Copy</button>
                         </div>
@@ -496,12 +614,12 @@ FailedLogins
                     </div>
                 </div>
 
-                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg mt-8">
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg mt-12">
                     <p class="font-semibold text-gray-800">Challenge 5: Find all users with successful logins from China and, from that list, find which of them also have successful logins from Russia.</p>
                 </div>
-                <button id="solution-btn-5" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200">Show Solution</button>
+                <button id="solution-btn-5" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium shadow-sm mt-4 mb-2">Show Solution</button>
                 <div id="solution-div-5" class="hidden mt-4">
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm shadow-sm">
+                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6 shadow-sm">
                         <div class="flex space-x-2 absolute top-2 right-2">
                             <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors duration-200">Copy</button>
                         </div>
@@ -677,3 +795,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
