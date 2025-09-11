@@ -687,13 +687,7 @@
                             this.setupMobileNav();
                         }
                         
-                        // Update page title
-                        const progress = this.progressTracker.getOverallProgress();
-                        if (progress.overallProgress > 0) {
-                            document.title = `Kusto Learning`;
-                        } else {
-                            document.title = 'Kusto Learning Docs';
-                        }
+
                     });
                 });
             }
@@ -979,13 +973,7 @@
                 this.setupNavigation(); // Refresh navigation to show completion
                 this.updateProgress();
                 
-                // Update page title
-                const progress = this.progressTracker.getOverallProgress();
-                if (progress.overallProgress > 0) {
-                    document.title = `Kusto Learning (${progress.overallProgress}% Complete)`;
-                } else {
-                    document.title = 'Kusto Learning Docs';
-                }
+
             }
 
             showToast(message, type = 'info') {
@@ -1157,18 +1145,6 @@
             
             // Initialize the main learning system
             window.kustoLearning = new KustoLearningSystem(progressTracker);
-            
-            // Update page title with progress indicator
-            const updateTitle = () => {
-                const progress = progressTracker.getOverallProgress();
-                if (progress.overallProgress > 0) {
-                    document.title = `Kusto Learning (${progress.overallProgress}% Complete)`;
-                }
-            };
-            
-            // Update title periodically
-            setInterval(updateTitle, 5000);
-            updateTitle();
         });
     </script>
 </body>
