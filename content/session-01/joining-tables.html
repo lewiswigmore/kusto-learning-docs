@@ -25,18 +25,75 @@
         </div>
     </div>
     <div>
-        <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">2. Challenge: Joining Failed Logins with Employee Data</h3>
-        <p class="mb-6">This challenge builds on our previous lessons. First, find the top 10 users with the most failed logins. Then, join that result with the <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">Employees</code> table to see their full name and role. This is a common security analysis task.</p>
+        <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">2. Common Join Types</h3>
+        <p class="mb-6">KQL supports several join types to handle different scenarios when combining tables. Here are the most commonly used join types:</p>
+        
+        <div class="space-y-4 mb-6">
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h4 class="font-semibold text-gray-800 mb-2"><code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">innerunique</code> (default)</h4>
+                <p class="text-gray-700">Returns rows that have matching keys in both tables. Only one row from the right table is returned per match.</p>
+            </div>
+            
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h4 class="font-semibold text-gray-800 mb-2"><code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">inner</code></h4>
+                <p class="text-gray-700">Returns all combinations of matching rows from both tables. Can result in multiple rows if there are multiple matches.</p>
+            </div>
+            
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h4 class="font-semibold text-gray-800 mb-2"><code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">leftouter</code></h4>
+                <p class="text-gray-700">Returns all rows from the left table, with matching data from the right table where available. Non-matching rows will have null values for right table columns.</p>
+            </div>
+            
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h4 class="font-semibold text-gray-800 mb-2"><code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">rightouter</code></h4>
+                <p class="text-gray-700">Returns all rows from the right table, with matching data from the left table where available.</p>
+            </div>
+            
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h4 class="font-semibold text-gray-800 mb-2"><code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">fullouter</code></h4>
+                <p class="text-gray-700">Returns all rows from both tables, combining them where keys match and filling with null values where they don't.</p>
+            </div>
+            
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h4 class="font-semibold text-gray-800 mb-2"><code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">anti</code></h4>
+                <p class="text-gray-700">Returns rows from the left table that do NOT have matching keys in the right table. Useful for finding missing data.</p>
+            </div>
+        </div>
+
         <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
             <div class="flex space-x-2 absolute top-2 right-2">
                 <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
             </div>
-            <pre><code><span class="kql-table">AuthenticationEvents</span>
+            <pre><code><span class="kql-comment">// Example: Find users with failed logins and their employee details</span>
+<span class="kql-comment">// Using leftouter to include all failed logins, even for non-employees</span>
+<span class="kql-table">AuthenticationEvents</span>
 <span class="kql-pipe">|</span> <span class="kql-keyword">where</span> result <span class="kql-pipe">==</span> <span class="kql-string">"Failed Login"</span>
 <span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> FailedAttempts <span class="kql-pipe">=</span> <span class="kql-function">count()</span> <span class="kql-keyword">by</span> username
-<span class="kql-pipe">|</span> <span class="kql-keyword">top</span> 10 <span class="kql-keyword">by</span> FailedAttempts <span class="kql-keyword">desc</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">join</span> kind<span class="kql-pipe">=</span>inner (<span class="kql-table">Employees</span>) <span class="kql-keyword">on</span> username
-<span class="kql-pipe">|</span> <span class="kql-keyword">project</span> name, role, FailedAttempts</code></pre>
+<span class="kql-pipe">|</span> <span class="kql-keyword">join</span> kind<span class="kql-pipe">=</span>leftouter (<span class="kql-table">Employees</span>) <span class="kql-keyword">on</span> username
+<span class="kql-pipe">|</span> <span class="kql-keyword">project</span> username, name, role, FailedAttempts
+<span class="kql-pipe">|</span> <span class="kql-keyword">top</span> 10 <span class="kql-keyword">by</span> FailedAttempts <span class="kql-keyword">desc</span></code></pre>
+        </div>
+        
+        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg mt-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-blue-700">
+                        <strong>Learn More:</strong> For comprehensive details about all join types, performance considerations, and advanced examples, see the 
+                        <a href="https://learn.microsoft.com/en-us/kusto/query/join-operator?view=microsoft-fabric" target="_blank" rel="noopener noreferrer" 
+                           class="underline hover:text-blue-900 font-medium">
+                            official KQL join operator documentation
+                            <svg class="w-3 h-3 ml-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                            </svg>
+                        </a>.
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 </div>

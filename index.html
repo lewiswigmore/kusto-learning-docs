@@ -62,6 +62,17 @@
             border: 1px solid #e5e7eb;
             box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
         }
+        .code-block pre {
+            margin: 0;
+            padding: 0;
+            line-height: 1.2;
+            white-space: pre-wrap;
+        }
+        .code-block code {
+            display: block;
+            line-height: 1.2;
+            font-size: 0.875rem;
+        }
         .nav-link:hover {
             transform: translateX(2px);
             transition: all 0.2s ease-in-out;
@@ -1020,6 +1031,30 @@
                         });
                     });
                 });
+
+                // Challenge hint and solution button functionality
+                for (let i = 1; i <= 5; i++) {
+                    const solutionBtn = document.getElementById(`solution-btn-${i}`);
+                    const solutionDiv = document.getElementById(`solution-div-${i}`);
+                    const hintBtn = document.getElementById(`hint-btn-${i}`);
+                    const hintDiv = document.getElementById(`hint-div-${i}`);
+                    
+                    // Solution button functionality
+                    if (solutionBtn && solutionDiv) {
+                        solutionBtn.addEventListener('click', () => {
+                            solutionDiv.classList.toggle('hidden');
+                            solutionBtn.textContent = solutionDiv.classList.contains('hidden') ? 'Show Solution' : 'Hide Solution';
+                        });
+                    }
+                    
+                    // Hint button functionality
+                    if (hintBtn && hintDiv) {
+                        hintBtn.addEventListener('click', () => {
+                            hintDiv.classList.toggle('hidden');
+                            hintBtn.innerHTML = hintDiv.classList.contains('hidden') ? '💡 Show Hint' : '💡 Hide Hint';
+                        });
+                    }
+                }
 
                 // Any other interactive elements would be bound here
             }
