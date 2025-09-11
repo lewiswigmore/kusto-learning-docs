@@ -711,12 +711,16 @@
                 
                 const percentage = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
                 
-                document.getElementById('progress-percentage').textContent = `${percentage}%`;
-                document.getElementById('progress-bar').style.width = `${percentage}%`;
+                // Update both desktop and mobile progress bars
+                const progressPercentageEl = document.getElementById('progress-percentage');
+                const progressBarEl = document.getElementById('progress-bar');
+                const mobileProgressPercentageEl = document.getElementById('mobile-progress-percentage');
+                const mobileProgressBarEl = document.getElementById('mobile-progress-bar');
                 
-                // Update mobile progress as well
-                document.getElementById('mobile-progress-percentage').textContent = `${percentage}%`;
-                document.getElementById('mobile-progress-bar').style.width = `${percentage}%`;
+                if (progressPercentageEl) progressPercentageEl.textContent = `${percentage}%`;
+                if (progressBarEl) progressBarEl.style.width = `${percentage}%`;
+                if (mobileProgressPercentageEl) mobileProgressPercentageEl.textContent = `${percentage}%`;
+                if (mobileProgressBarEl) mobileProgressBarEl.style.width = `${percentage}%`;
             }
 
             loadInitialContent() {
@@ -970,9 +974,9 @@
                 }
                 
                 this.updateTopicNavigation(this.currentSession, this.currentTopic);
-                this.setupNavigation(); // Refresh navigation to show completion
-                this.updateProgress();
-                
+                this.setupNavigation(); // Refresh desktop navigation to show completion
+                this.setupMobileNav(); // Refresh mobile navigation to show completion
+                this.updateProgress(); // Update progress bars immediately
 
             }
 
