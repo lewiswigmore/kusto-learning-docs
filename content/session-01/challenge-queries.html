@@ -15,7 +15,7 @@
         <button id="solution-btn-1" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium shadow-sm">Show Solution</button>
     </div>
     <div id="hint-div-1" class="hidden mt-3 bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg">
-        <p class="text-amber-800"><strong>Hint:</strong> Use the <code>AuthenticationEvents</code> table. Filter by result equals "Failed Login". Use <code>summarize count()</code> to group by username, then sort and take the top 3.</p>
+        <p class="text-amber-800"><strong>Hint:</strong> Use the <code>AuthenticationEvents</code> table and try using the <code>summarize count()</code> function. Think about which column contains login status information and how to identify unsuccessful attempts.</p>
     </div>
     <div id="solution-div-1" class="hidden mt-4">
         <div class="code-block relative rounded-lg p-4 font-mono text-sm shadow-sm">
@@ -56,7 +56,7 @@
         <button id="solution-btn-2" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200 font-medium shadow-sm">Show Solution</button>
     </div>
     <div id="hint-div-2" class="hidden mt-3 bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg">
-        <p class="text-amber-800"><strong>Hint:</strong> Use the <code>AuthenticationEvents</code> table. Group by <code>src_ip</code> and count all attempts (successful and failed). Use <code>top 10</code> to get the highest counts.</p>
+        <p class="text-amber-800"><strong>Hint:</strong> Consider which table contains network information and what column represents the source of authentication attempts. Use aggregation functions to count occurrences and sorting to find the highest values.</p>
     </div>
     <div id="solution-div-2" class="hidden mt-4">
         <div class="code-block relative rounded-lg p-4 font-mono text-sm shadow-sm">
@@ -102,7 +102,7 @@
         <button id="solution-btn-3" class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200 font-medium shadow-sm">Show Solution</button>
     </div>
     <div id="hint-div-3" class="hidden mt-3 bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg">
-        <p class="text-amber-800"><strong>Hint:</strong> Start with <code>AuthenticationEvents</code> table for failed logins, then join with <code>Employees</code> table. Use <code>summarize count()</code> by username, <code>top 10</code>, then <code>join</code> on username to get name and role.</p>
+        <p class="text-amber-800"><strong>Hint:</strong> This challenge requires combining data from multiple tables. Think about which table has authentication data and which has employee details. Consider how to connect related records between tables using common fields.</p>
     </div>
     <div id="solution-div-3" class="hidden mt-4">
         <div class="code-block relative rounded-lg p-4 font-mono text-sm shadow-sm">
@@ -152,7 +152,7 @@
         <button id="solution-btn-4" class="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition-colors duration-200 font-medium shadow-sm">Show Solution</button>
     </div>
     <div id="hint-div-4" class="hidden mt-3 bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg">
-        <p class="text-amber-800"><strong>Hint:</strong> Use the <code>AuthenticationEvents</code> table. Use <code>arg_min()</code> and <code>arg_max()</code> functions with timestamp to find earliest and latest events. Group by username.</p>
+        <p class="text-amber-800"><strong>Hint:</strong> Think about functions that can find minimum and maximum values within groups. Consider what column contains timing information and how to group data by user identity.</p>
     </div>
     <div id="solution-div-4" class="hidden mt-4">
         <div class="code-block relative rounded-lg p-4 font-mono text-sm shadow-sm">
@@ -203,7 +203,7 @@
         <button id="solution-btn-5" class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors duration-200 font-medium shadow-sm">Show Solution</button>
     </div>
     <div id="hint-div-5" class="hidden mt-3 bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg">
-        <p class="text-amber-800"><strong>Hint:</strong> Use <code>AuthenticationEvents</code> table with <code>geo_info_from_ip_address()</code> function. Create a <code>let</code> statement for China users first, then filter for Russia logins from that list. Use <code>distinct username</code> to get the unique user.</p>
+        <p class="text-amber-800"><strong>Hint:</strong> This challenge involves geographic analysis of IP addresses. Consider functions that can extract location information from network addresses, and think about how to find users who appear in multiple specific locations. You may need to use temporary variables or subqueries.</p>
     </div>
     <div id="solution-div-5" class="hidden mt-4">
         <div class="code-block relative rounded-lg p-4 font-mono text-sm shadow-sm">
