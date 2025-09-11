@@ -281,6 +281,12 @@ class MonacoManager {
         const promises = [];
 
         codeBlocks.forEach((codeElement, index) => {
+            // Skip code blocks that are inside hidden solution containers
+            const solutionDiv = codeElement.closest('[id^="solution-div"]');
+            if (solutionDiv && solutionDiv.classList.contains('hidden')) {
+                return; // Skip this code block, it will be processed when solution is shown
+            }
+            
             const code = codeElement.textContent.trim();
             const editorId = `monaco-editor-${index}`;
             

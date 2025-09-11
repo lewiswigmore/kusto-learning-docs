@@ -1041,9 +1041,38 @@
                     
                     // Solution button functionality
                     if (solutionBtn && solutionDiv) {
-                        solutionBtn.addEventListener('click', () => {
+                        solutionBtn.addEventListener('click', async () => {
+                            const wasHidden = solutionDiv.classList.contains('hidden');
                             solutionDiv.classList.toggle('hidden');
                             solutionBtn.textContent = solutionDiv.classList.contains('hidden') ? 'Show Solution' : 'Hide Solution';
+                            
+                            // If we just revealed the solution, process Monaco editors for this solution
+                            if (wasHidden && window.monacoManager) {
+                                // Wait a bit for the DOM to update
+                                setTimeout(async () => {
+                                    const codeBlocks = solutionDiv.querySelectorAll('.code-block pre code');
+                                    const promises = [];
+                                    
+                                    codeBlocks.forEach((codeElement, index) => {
+                                        const code = codeElement.textContent.trim();
+                                        const editorId = `solution-monaco-editor-${i}-${index}`;
+                                        
+                                        // Create container for Monaco editor
+                                        const container = document.createElement('div');
+                                        container.id = editorId;
+                                        container.className = 'monaco-container';
+                                        
+                                        // Replace the code block with Monaco editor container
+                                        const codeBlock = codeElement.closest('.code-block');
+                                        codeBlock.parentNode.replaceChild(container, codeBlock);
+                                        
+                                        // Create the editor (now that container is visible)
+                                        promises.push(window.monacoManager.createEditor(editorId, code));
+                                    });
+                                    
+                                    await Promise.all(promises);
+                                }, 50);
+                            }
                         });
                     }
                     
