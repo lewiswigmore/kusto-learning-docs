@@ -1,0 +1,45 @@
+<div class="content-section">
+    <div class="mb-8">
+        <div class="flex items-center mb-4">
+            <div class="w-3 h-8 bg-red-500 rounded-full mr-4"></div>
+            <h2 class="text-3xl font-bold text-gray-900">Part 5: Advanced Concepts</h2>
+        </div>
+        <p class="text-lg text-gray-600 mb-6 leading-relaxed">To write cleaner and more powerful queries, KQL provides features like variables and in-memory tables. In this section, you'll learn how to use <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">let</code> statements to define reusable expressions and <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">datatable</code> to create temporary tables for filtering or testing.</p>
+    </div>
+    
+     <div>
+        <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">1. Reusable Expressions with <code class="text-lg">let</code></h3>
+        <p class="mb-6">A <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">let</code> statement assigns a name to an expression or function. This is extremely useful for breaking complex queries into logical, readable parts.</p>
+         <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
+            <div class="flex space-x-2 absolute top-2 right-2">
+                <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
+            </div>
+            <pre><code><span class="kql-comment">// Find the role of the user with the most failed logins</span>
+<span class="kql-keyword">let</span> FailedLogins <span class="kql-pipe">=</span> <span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> result <span class="kql-pipe">==</span> <span class="kql-string">"Failed Login"</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> <span class="kql-function">count()</span> <span class="kql-keyword">by</span> username
+<span class="kql-pipe">|</span> <span class="kql-keyword">top</span> 1 <span class="kql-keyword">by</span> count_;
+<span class="kql-comment">// Now join that result to the Employees table</span>
+FailedLogins
+<span class="kql-pipe">|</span> <span class="kql-keyword">join</span> kind<span class="kql-pipe">=</span>inner <span class="kql-table">Employees</span> <span class="kql-keyword">on</span> username
+<span class="kql-pipe">|</span> <span class="kql-keyword">project</span> name, role, FailedLoginCount <span class="kql-pipe">=</span> count_</code></pre>
+        </div>
+    </div>
+    
+     <div>
+        <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">2. In-Memory Tables with <code class="text-lg">datatable</code></h3>
+        <p class="mb-6">The <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">datatable</code> operator lets you define a small, temporary table directly in your query. It's perfect for filtering against a known list of values, for example, a list of specific IP addresses you want to investigate.</p>
+         <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
+            <div class="flex space-x-2 absolute top-2 right-2">
+                <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
+            </div>
+            <pre><code><span class="kql-keyword">let</span> T <span class="kql-pipe">=</span> <span class="kql-function">datatable</span>(src_ip: <span class="kql-keyword">string</span>) [
+    <span class="kql-string">'58.128.200.24'</span>,
+    <span class="kql-string">'106.110.117.45'</span>,
+    <span class="kql-string">'113.224.96.5'</span>
+];
+<span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> src_ip <span class="kql-keyword">in</span> (T)</code></pre>
+        </div>
+    </div>
+</div>

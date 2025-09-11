@@ -1,0 +1,75 @@
+<div class="content-section bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-8">
+    <div class="flex items-center mb-6">
+        <div class="w-3 h-8 bg-blue-500 rounded-full mr-4"></div>
+        <h2 class="text-3xl font-bold text-gray-900">Session 1: Introduction</h2>
+    </div>
+    <div class="space-y-4 text-gray-700 leading-relaxed">
+        <p>Welcome to the first session of our interactive Kusto Query Language (KQL) guide! In this session, our goal is to get you comfortable with the fundamental building blocks of KQL. By the end, you'll be able to navigate tables, filter data, and perform basic analysis.</p>
+        <p>We will focus our learning primarily on two tables: <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">AuthenticationEvents</code> and <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">Employees</code>. We'll also briefly use <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">InboundBrowsing</code> and <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">OutboundBrowsing</code> to explore advanced concepts.</p>
+    </div>
+</div>
+
+<!-- Getting Started Section -->
+<div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-8 mt-8">
+    <div class="flex items-center mb-6">
+        <div class="w-3 h-8 bg-green-500 rounded-full mr-4"></div>
+        <h3 class="text-2xl font-bold text-gray-900">Getting Started: Connect to the Practice Environment</h3>
+    </div>
+    <div class="space-y-6">
+        <p class="text-gray-700 leading-relaxed">
+            Before diving into the queries, you'll need to connect to our practice environment. We'll be using the public 
+            <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">help.kusto.windows.net</code> cluster, 
+            which contains sample data perfect for learning KQL.
+        </p>
+        
+        <div class="bg-white border border-green-200 rounded-lg p-6">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">🚀 Quick Setup Steps:</h4>
+            <ol class="list-decimal list-inside space-y-3 text-gray-700">
+                <li class="flex items-start">
+                    <span class="font-semibold mr-2">1.</span>
+                    <div>
+                        Open your browser and navigate to: 
+                        <a href="https://aka.ms/adx" target="_blank" rel="noopener noreferrer" 
+                           class="inline-flex items-center ml-2 px-3 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                            🔗 aka.ms/adx
+                            <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </li>
+                <li class="flex items-start">
+                    <span class="font-semibold mr-2">2.</span>
+                    <div>Sign in with your Microsoft account (or create one if needed)</div>
+                </li>
+                <li class="flex items-start">
+                    <span class="font-semibold mr-2">3.</span>
+                    <div>
+                        Connect to the cluster by entering: 
+                        <code class="bg-gray-100 text-gray-800 px-2 py-1 rounded-md font-mono text-sm ml-1">help.kusto.windows.net</code>
+                    </div>
+                </li>
+                <li class="flex items-start">
+                    <span class="font-semibold mr-2">4.</span>
+                    <div>You're ready to start querying! Try copying and pasting the examples below.</div>
+                </li>
+            </ol>
+        </div>
+        
+        <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-amber-700">
+                        <strong>Note:</strong> The help.kusto.windows.net cluster is a public learning environment. 
+                        Don't use it for sensitive data - stick to the practice queries in this guide!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

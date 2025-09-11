@@ -1,0 +1,110 @@
+{
+  "sessions": [
+    {
+      "id": "session-01",
+      "title": "KQL Fundamentals",
+      "description": "Master the core concepts of Kusto Query Language with hands-on examples using real security data.",
+      "difficulty": "Beginner",
+      "estimatedTime": "1 hour 30 minutes",
+      "prerequisites": [],
+      "tags": ["basics", "introduction", "fundamentals"],
+      "topics": [
+        {
+          "id": "introduction",
+          "title": "Introduction",
+          "type": "overview",
+          "description": "Overview of KQL and what you'll learn",
+          "duration": "5 minutes"
+        },
+        {
+          "id": "testing-access",
+          "title": "Testing Access",
+          "type": "setup",
+          "description": "Verify connection to the practice environment",
+          "duration": "5 minutes"
+        },
+        {
+          "id": "kql-basics",
+          "title": "KQL Basics",
+          "type": "tutorial",
+          "description": "Core operators and data flow concepts",
+          "duration": "10 minutes"
+        },
+        {
+          "id": "filtering-projecting",
+          "title": "Filtering & Projecting",
+          "type": "tutorial",
+          "description": "Using where, project, and extend operators",
+          "duration": "10 minutes"
+        },
+        {
+          "id": "aggregation-time",
+          "title": "Aggregation & Time",
+          "type": "tutorial",
+          "description": "Summarize data and work with time series",
+          "duration": "15 minutes"
+        },
+        {
+          "id": "joining-tables",
+          "title": "Joining Tables",
+          "type": "tutorial",
+          "description": "Combine data from multiple tables",
+          "duration": "15 minutes"
+        },
+        {
+          "id": "advanced-concepts",
+          "title": "Advanced Concepts",
+          "type": "tutorial",
+          "description": "Variables and in-memory tables",
+          "duration": "15 minutes"
+        },
+        {
+          "id": "challenge-queries",
+          "title": "Challenge Queries",
+          "type": "practice",
+          "description": "Test your knowledge with practical exercises",
+          "duration": "15 minutes"
+        }
+      ]
+    },
+    {
+      "id": "session-02",
+      "title": "ADX Efficiency & Productivity",
+      "description": "Master shortcuts, data export techniques, and workflow optimization to become a power user of Azure Data Explorer",
+      "difficulty": "Intermediate",
+      "estimatedTime": "1 hour 15 minutes",
+      "prerequisites": ["Recommended: Session 1"],
+      "tags": ["efficiency", "shortcuts", "productivity", "optimization"],
+      "topics": [
+        {
+          "id": "keyboard-shortcuts",
+          "title": "Keyboard Shortcuts & Navigation",
+          "type": "tutorial",
+          "description": "Content coming soon - Master essential shortcuts for faster query development",
+          "duration": "20 min"
+        },
+        {
+          "id": "copy-export-techniques",
+          "title": "Data Copy & Export Techniques",
+          "type": "tutorial", 
+          "description": "Content coming soon - Efficient methods for copying and exporting query results",
+          "duration": "25 min"
+        },
+        {
+          "id": "query-optimization",
+          "title": "Query Development Optimization",
+          "type": "tutorial",
+          "description": "Content coming soon - Best practices for faster query writing and debugging",
+          "duration": "20 min"
+        },
+        {
+          "id": "workspace-management",
+          "title": "Workspace & Tab Management", 
+          "type": "tutorial",
+          "description": "Content coming soon - Organize your work environment for maximum productivity",
+          "duration": "10 min"
+        }
+      ]
+    }
+  ]
+}

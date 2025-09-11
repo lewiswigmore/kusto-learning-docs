@@ -6,15 +6,30 @@
     <title>Kusto Learning Docs</title>
     <link rel="icon" href="icons/analytics/10145-icon-service-Azure-Data-Explorer-Clusters.svg" type="image/svg+xml">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.6.2/fuse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+    <script src="js/content-manager.js"></script>
+    <script src="js/monaco-manager.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #fafaf9;
         }
+        
+        /* Monaco Editor Styles */
+        .monaco-container {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+        
+        /* Legacy KQL Syntax Highlighting (fallback) */
         .kql-keyword { color: #1e40af; }
         .kql-pipe { color: #374151; }
         .kql-string { color: #dc2626; }
@@ -26,6 +41,21 @@
             color: #1e40af;
             font-weight: 600;
         }
+        .session-group.collapsed .session-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .session-group:not(.collapsed) .session-content {
+            max-height: 1000px;
+            transition: max-height 0.3s ease-in;
+        }
+        .session-group .toggle-icon {
+            transition: transform 0.2s ease;
+        }
+        .session-group.collapsed .toggle-icon {
+            transform: rotate(-90deg);
+        }
         .code-block {
             background-color: #ffffff;
             color: #374151;
@@ -36,771 +66,1046 @@
             transform: translateX(2px);
             transition: all 0.2s ease-in-out;
         }
-        .chart-container {
-            position: relative;
-            width: 100%;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 300px;
-            max-height: 400px;
+        .search-result-highlight {
+            background-color: #fef3c7;
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+            font-weight: 600;
         }
-        @media (min-width: 768px) {
-            .chart-container {
-                height: 400px;
-            }
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
-        }
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
-            border-radius: 8px;
-            width: 80%;
-            max-width: 600px;
-        }
-        .close-btn {
-            color: #9ca3af;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .close-btn:hover,
-        .close-btn:focus {
-            color: #374151;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            width: 36px;
-            height: 36px;
+        .progress-indicator {
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
-            border-left-color: #3b82f6;
-            animation: spin 1s ease infinite;
+            background-color: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 10px;
+            flex-shrink: 0;
+        }
+        .progress-indicator.completed {
+            background-color: #10b981;
+            color: white;
+        }
+        .progress-indicator.current {
+            background-color: #3b82f6;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+        .progress-indicator.locked {
+            background-color: #6b7280;
+            color: white;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        #mobile-nav {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+        }
+        #mobile-nav.open {
+            transform: translateX(0);
+        }
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        details[open] summary {
-            border-bottom: 1px solid #e2e8f0;
-            margin-bottom: 0.5rem;
-            padding-bottom: 0.5rem;
+        .breadcrumb {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 1rem;
         }
-        details summary {
-            list-style: none;
-            position: relative;
-        }
-        details summary::-webkit-details-marker {
-            display: none;
-        }
-        details summary::after {
-            content: '+';
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
+        .breadcrumb a {
             color: #3b82f6;
-            font-weight: bold;
+            text-decoration: none;
         }
-        details[open] summary::after {
-            content: '-';
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        .topic-navigation {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            padding: 1rem;
+            margin: 2rem 0 -1rem 0;
+            width: 100%;
+            z-index: 10;
+        }
+        .session-group.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            filter: grayscale(50%);
+        }
+        .session-group.disabled .session-header:hover {
+            background-color: #f9fafb !important;
+        }
+        @media (min-width: 1024px) {
+            .topic-navigation {
+                margin: 2rem 0 -3rem 0;
+                /* Ensure it doesn't overlap sidebar on desktop */
+                margin-left: 0;
+                margin-right: 0;
+            }
         }
     </style>
 </head>
 <body class="text-gray-800 bg-stone-50">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+        <div class="text-center">
+            <div class="loading-spinner"></div>
+            <p class="text-gray-600 mt-4">Loading KQL Learning Platform...</p>
+        </div>
+    </div>
 
-    <div class="flex min-h-screen">
-        <aside class="w-72 sticky top-0 h-screen bg-white border-r border-stone-200 shadow-sm hidden lg:block overflow-y-auto">
-            <div class="p-6 border-b border-stone-200">
-                <h2 class="text-xl font-bold text-gray-900">KQL Learning Guide</h2>
-                <p class="text-sm text-gray-500 mt-1">Interactive Session 1</p>
+    <div class="flex min-h-screen relative">
+        <!-- Mobile Navigation Backdrop -->
+        <div id="mobile-backdrop" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden"></div>
+        
+        <!-- Mobile Navigation -->
+        <aside id="mobile-nav" class="fixed top-0 left-0 z-50 w-80 h-screen bg-white border-r border-stone-200 shadow-lg lg:hidden overflow-y-auto">
+            <div class="p-4 border-b border-stone-200 flex items-center justify-between">
+                <h2 class="text-lg font-bold text-gray-900">Kusto Learning Docs</h2>
+                <button id="close-mobile-nav" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
             </div>
-            <nav id="desktop-nav" class="p-4">
-                <div class="space-y-1">
-                    <div class="mb-4">
-                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Contents</h3>
-                        <div class="space-y-1">
-                            <a href="#introduction" class="nav-link group flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-all duration-200">
-                                <span class="w-2 h-2 bg-blue-400 rounded-full mr-3 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                                Introduction
-                            </a>
-                            <a href="#part1" class="nav-link group flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-all duration-200">
-                                <span class="w-2 h-2 bg-blue-400 rounded-full mr-3 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                                KQL Basics
-                            </a>
-                            <a href="#part2" class="nav-link group flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-all duration-200">
-                                <span class="w-2 h-2 bg-blue-400 rounded-full mr-3 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                                Filtering & Projecting
-                            </a>
-                            <a href="#part3" class="nav-link group flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-all duration-200">
-                                <span class="w-2 h-2 bg-blue-400 rounded-full mr-3 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                                Aggregation & Time
-                            </a>
-                            <a href="#part4" class="nav-link group flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-all duration-200">
-                                <span class="w-2 h-2 bg-blue-400 rounded-full mr-3 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                                Joining Tables
-                            </a>
-                            <a href="#part5" class="nav-link group flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-all duration-200">
-                                <span class="w-2 h-2 bg-blue-400 rounded-full mr-3 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                                Advanced Concepts
-                            </a>
-                            <a href="#part6" class="nav-link group flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-all duration-200">
-                                <span class="w-2 h-2 bg-blue-400 rounded-full mr-3 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                                Challenge Queries
-                            </a>
-                        </div>
+            <div class="p-4">
+                <!-- Mobile Search -->
+                <div class="relative mb-4">
+                    <input 
+                        type="text" 
+                        id="mobile-search-input" 
+                        placeholder="Search sessions, topics..." 
+                        class="w-full px-4 py-2 pl-10 pr-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    >
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                </div>
+                <!-- Progress Overview -->
+                <div class="p-3 bg-blue-50 rounded-lg mb-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-gray-700">Progress</span>
+                        <span class="text-xs text-blue-600" id="mobile-progress-percentage">0%</span>
                     </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-blue-500 h-2 rounded-full transition-all duration-300" id="mobile-progress-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            <nav id="mobile-nav-content" class="px-4 pb-20">
+                <!-- Mobile navigation content will be populated here -->
+            </nav>
+        </aside>
+
+        <!-- Desktop Navigation -->
+        <aside class="w-80 fixed top-0 left-0 h-screen bg-white border-r border-stone-200 shadow-sm hidden lg:flex flex-col overflow-hidden">
+            <div class="p-6 border-b border-stone-200 flex-shrink-0">
+                <h2 class="text-xl font-bold text-gray-900">Kusto Learning Docs</h2>
+                <p class="text-sm text-gray-500 mt-1">Interactive Learning Platform</p>
+                
+                <!-- Search Bar -->
+                <div class="mt-4 relative">
+                    <input 
+                        type="text" 
+                        id="search-input" 
+                        placeholder="Search sessions, topics, queries..." 
+                        class="w-full px-4 py-2 pl-10 pr-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    >
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                </div>
+                
+                <!-- Progress Overview -->
+                <div class="mt-4 p-3 bg-blue-50 rounded-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-gray-700">Overall Progress</span>
+                        <span class="text-xs text-blue-600" id="progress-percentage">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-blue-500 h-2 rounded-full transition-all duration-300" id="progress-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation Content -->
+            <nav id="desktop-nav" class="flex-1 p-4 overflow-y-auto">
+                <!-- Navigation will be populated by JavaScript -->
+                <div class="flex items-center justify-center py-8">
+                    <div class="loading-spinner"></div>
                 </div>
             </nav>
         </aside>
 
-        <main class="flex-1 bg-white shadow-sm">
-            <div class="max-w-4xl mx-auto p-8 lg:p-12">
-                <header class="mb-12">
-                    <div class="border-b border-stone-200 pb-8">
-                        <h1 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Interactive KQL Session 1</h1>
-                        <p class="text-lg text-gray-600 max-w-3xl">A hands-on guide to Kusto Query Language using the public <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">help.kusto.windows.net</code> cluster.</p>
-                    </div>
-                </header>
-            
-            <section id="introduction" class="mb-16 scroll-mt-20">
-                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-8 mb-8">
-                    <div class="flex items-center mb-4">
-                        <div class="w-3 h-8 bg-blue-500 rounded-full mr-4"></div>
-                        <h2 class="text-3xl font-bold text-gray-900">Session 1: Introduction</h2>
-                    </div>
-                    <div class="space-y-4 text-gray-700 leading-relaxed">
-                        <p>Welcome to the first session of our interactive Kusto Query Language (KQL) guide! In this session, our goal is to get you comfortable with the fundamental building blocks of KQL. By the end, you'll be able to navigate tables, filter data, and perform basic analysis.</p>
-                        <p>We will focus our learning primarily on two tables: <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">AuthenticationEvents</code> and <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">Employees</code>. We'll also briefly use <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">InboundBrowsing</code> and <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">OutboundBrowsing</code> to explore advanced concepts.</p>
-                    </div>
+        <!-- Main Content Area -->
+        <main class="flex-1 bg-white shadow-sm flex flex-col lg:ml-80">
+            <!-- Mobile Header -->
+            <div class="lg:hidden bg-white border-b border-gray-200 p-4 sticky top-0 z-30 flex-shrink-0">
+                <div class="flex items-center justify-between">
+                    <button id="open-mobile-nav" class="text-gray-600 hover:text-gray-900">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <h1 class="font-semibold text-gray-900">KQL Learning</h1>
+                    <button id="mobile-complete-topic" class="text-green-600 hover:text-green-700 hidden">
+                        <i class="fas fa-check text-xl"></i>
+                    </button>
                 </div>
-                
-                <!-- Getting Started Section -->
-                <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-8 mb-8">
-                    <div class="flex items-center mb-6">
-                        <div class="w-3 h-8 bg-green-500 rounded-full mr-4"></div>
-                        <h3 class="text-2xl font-bold text-gray-900">Getting Started: Connect to the Practice Environment</h3>
-                    </div>
-                    <div class="space-y-6">
-                        <p class="text-gray-700 leading-relaxed">
-                            Before diving into the queries, you'll need to connect to our practice environment. We'll be using the public 
-                            <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">help.kusto.windows.net</code> cluster, 
-                            which contains sample data perfect for learning KQL.
-                        </p>
-                        
-                        <div class="bg-white border border-green-200 rounded-lg p-6">
-                            <h4 class="text-lg font-semibold text-gray-800 mb-4">🚀 Quick Setup Steps:</h4>
-                            <ol class="list-decimal list-inside space-y-3 text-gray-700">
-                                <li class="flex items-start">
-                                    <span class="font-semibold mr-2">1.</span>
-                                    <div>
-                                        Open your browser and navigate to: 
-                                        <a href="https://aka.ms/adx" target="_blank" rel="noopener noreferrer" 
-                                           class="inline-flex items-center ml-2 px-3 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors duration-200">
-                                            🔗 aka.ms/adx
-                                            <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                                            </svg>
-                                        </a>
-                                    </div>
-                                </li>
-                                <li class="flex items-start">
-                                    <span class="font-semibold mr-2">2.</span>
-                                    <div>Sign in with your Microsoft account (or create one if needed)</div>
-                                </li>
-                                <li class="flex items-start">
-                                    <span class="font-semibold mr-2">3.</span>
-                                    <div>
-                                        Connect to the cluster by entering: 
-                                        <code class="bg-gray-100 text-gray-800 px-2 py-1 rounded-md font-mono text-sm ml-1">help.kusto.windows.net</code>
-                                    </div>
-                                </li>
-                                <li class="flex items-start">
-                                    <span class="font-semibold mr-2">4.</span>
-                                    <div>You're ready to start querying! Try copying and pasting the examples below.</div>
-                                </li>
-                            </ol>
-                        </div>
-                        
-                        <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg">
-                            <div class="flex">
-                                <div class="flex-shrink-0">
-                                    <svg class="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                    </svg>
-                                </div>
-                                <div class="ml-3">
-                                    <p class="text-sm text-amber-700">
-                                        <strong>Note:</strong> The help.kusto.windows.net cluster is a public learning environment. 
-                                        Don't use it for sensitive data - stick to the practice queries in this guide!
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            </div>
 
-            <section id="part1" class="mb-16 scroll-mt-20">
-                <div class="mb-8">
-                    <div class="flex items-center mb-4">
-                        <div class="w-3 h-8 bg-emerald-500 rounded-full mr-4"></div>
-                        <h2 class="text-3xl font-bold text-gray-900">Part 1: The Basics - Core Operators & Tables</h2>
+            <!-- Search Results -->
+            <div id="search-results" class="hidden bg-yellow-50 border-b border-yellow-200 p-4 flex-shrink-0">
+                <div class="max-w-4xl mx-auto">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-lg font-semibold text-gray-900">Search Results</h3>
+                        <button id="clear-search" class="text-sm text-blue-600 hover:text-blue-800">Clear Search</button>
                     </div>
-                    <p class="text-lg text-gray-600 mb-6 leading-relaxed">This section covers the fundamental concepts of KQL. We'll explore the data flow model, connect to a database, and learn how to safely preview data from tables, which is the first step in any data exploration task.</p>
-                </div>
-                
-                <div>
-                    <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">1. Concept: Operators and Piping</h3>
-                    <p class="mb-6">KQL is a data flow language. You start with a data source (like a table), and then use the pipe character <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">|</code> to pass that data through a series of operators. Each operator transforms the data and passes its output to the next one in the chain.</p>
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6 shadow-sm">
-                        <div class="flex space-x-2 absolute top-2 right-2">
-                            <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors duration-200">Copy</button>
-                        </div>
-                        <pre><code><span class="kql-function">print</span> <span class="kql-string">"hello world!"</span></code></pre>
+                    <div id="search-results-content" class="space-y-2 max-h-60 overflow-y-auto">
+                        <!-- Search results will be populated here -->
                     </div>
                 </div>
+            </div>
 
-                <div>
-                    <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">2. Viewing Table Schemas</h3>
-                    <p class="mb-6">Before querying a table, you must understand its structure. The <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">getschema</code> operator shows you all the column names and their corresponding data types (<code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">string</code>, <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">int</code>, etc.).</p>
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6 shadow-sm">
-                        <div class="flex space-x-2 absolute top-2 right-2">
-                            <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors duration-200">Copy</button>
-                        </div>
-                        <pre><code><span class="kql-table">AuthenticationEvents</span>
-<span class="kql-pipe">|</span> <span class="kql-function">getschema</span></code></pre>
+            <!-- Breadcrumb Navigation -->
+            <div id="breadcrumb" class="hidden bg-gray-50 border-b border-gray-200 px-6 py-3 lg:px-12 flex-shrink-0">
+                <!-- Breadcrumb will be populated here -->
+            </div>
+
+            <!-- Dynamic Content Container -->
+            <div id="content-container" class="flex-1 max-w-4xl mx-auto p-6 lg:p-12 overflow-y-auto">
+                <!-- Content will be loaded dynamically -->
+                <div class="flex items-center justify-center py-20">
+                    <div class="text-center">
+                        <div class="loading-spinner"></div>
+                        <p class="text-gray-600 mt-4">Loading content...</p>
                     </div>
                 </div>
+            </div>
 
-                <div>
-                    <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">3. Best Practices for Previewing Data</h3>
-                    <p class="mb-6">Never query a full table without limiting the results, as it can be slow and resource-intensive. Use the <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">take</code> operator to grab a small, random sample of records to inspect the data safely.</p>
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6 shadow-sm">
-                        <div class="flex space-x-2 absolute top-2 right-2">
-                            <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors duration-200">Copy</button>
-                        </div>
-                        <pre><code><span class="kql-table">AuthenticationEvents</span>
-<span class="kql-pipe">|</span> <span class="kql-function">take</span> 10</code></pre>
-                    </div>
-                </div>
-            </section>
-
-            <section id="part2" class="mb-16 scroll-mt-20">
-                <div class="mb-8">
-                    <div class="flex items-center mb-4">
-                        <div class="w-3 h-8 bg-purple-500 rounded-full mr-4"></div>
-                        <h2 class="text-3xl font-bold text-gray-900">Part 2: Filtering & Projecting</h2>
-                    </div>
-                    <p class="text-lg text-gray-600 mb-6 leading-relaxed">In this section, you'll learn how to get the specific data you need. We will cover filtering rows based on conditions using the powerful <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">where</code> operator, and then selecting, renaming, or even creating new columns using <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">project</code> and <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">extend</code>.</p>
-                </div>
-
-                <div>
-                    <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">1. Filtering with <code class="text-lg">| where</code></h3>
-                    <p class="mb-6">The <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">where</code> operator filters the data to only include rows that match your specified conditions. You can perform exact matches, partial matches, and check for empty values.</p>
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
-                        <div class="flex space-x-2 absolute top-2 right-2">
-                            <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
-                        </div>
-                        <pre><code><span class="kql-table">AuthenticationEvents</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> result <span class="kql-pipe">==</span> <span class="kql-string">"Failed Login"</span>
-<span class="kql-pipe">|</span> <span class="kql-function">take</span> 10</code></pre>
-                    </div>
-                </div>
-
-                <div>
-                    <h4 class="text-lg font-medium mb-4 mt-6">2. Optimization: Filter on Time First</h4>
-                    <p class="mb-6">For optimal performance, always apply your time-based filter as the **first** <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">where</code> statement in your query. The KQL engine is highly optimized to prune data partitions by time, which can dramatically reduce the amount of data processed by subsequent operators. This is a critical best practice for large datasets.</p>
-                     <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
-                        <div class="flex space-x-2 absolute top-2 right-2">
-                            <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
-                        </div>
-                        <pre><code><span class="kql-comment">// A well-optimized query filters on a timestamp first.</span>
-<span class="kql-table">AuthenticationEvents</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> timestamp <span class="kql-pipe">&gt;=</span> <span class="kql-function">ago</span>(7d)
-<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> result <span class="kql-pipe">==</span> <span class="kql-string">"Successful Login"</span>
-<span class="kql-pipe">|</span> <span class="kql-function">count</span></code></pre>
-                    </div>
-                </div>
-
-                <div>
-                    <h4 class="text-lg font-medium mb-4 mt-6">3. Partial String Matches: <code class="text-md">contains</code> vs. <code class="text-md">has</code></h4>
-                    <p class="mb-6">Both operators search for substrings, but they work differently. <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">contains</code> performs a full scan, while <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">has</code> uses a pre-built index for much faster searches on whole words (tokens).</p>
-                    <div class="grid md:grid-cols-2 gap-4">
-                        <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
-                            <div class="flex space-x-2 absolute top-2 right-2">
-                                <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
-                            </div>
-                            <pre><code><span class="kql-comment">// This works because "fail" is a word in the 'result' column</span>
-<span class="kql-table">AuthenticationEvents</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> result <span class="kql-keyword">contains</span> <span class="kql-string">"fail"</span>
-<span class="kql-pipe">|</span> <span class="kql-function">take</span> 10</code></pre>
-                        </div>
-                         <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
-                            <div class="flex space-x-2 absolute top-2 right-2">
-                                <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
-                            </div>
-                            <pre><code><span class="kql-comment">// This query won't return results - 'has' requires exact word matches</span>
-<span class="kql-table">AuthenticationEvents</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> result <span class="kql-keyword">has</span> <span class="kql-string">"fail"</span>
-<span class="kql-pipe">|</span> <span class="kql-function">take</span> 10</code></pre>
-                        </div>
+            <!-- Topic Navigation -->
+            <div id="topic-navigation" class="topic-navigation hidden">
+                <div class="max-w-4xl mx-auto flex justify-between items-center">
+                    <button id="prev-topic" class="flex items-center px-4 py-2 text-blue-600 hover:text-blue-800 disabled:text-gray-400 disabled:cursor-not-allowed">
+                        <i class="fas fa-chevron-left mr-2"></i>
+                        <span class="hidden sm:inline">Previous</span>
+                    </button>
+                    
+                    <div class="flex items-center gap-4">
+                        <button id="toggle-topic-completion" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
+                            <i class="fas fa-check"></i>
+                            <span class="hidden sm:inline">Complete Topic</span>
+                        </button>
                     </div>
                     
-                    <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg mt-4">
-                        <p class="text-sm text-gray-700">
-                            <strong>Why the `has` query doesn't work:</strong> The `has` operator looks for complete words (tokens) separated by word boundaries. 
-                            In the AuthenticationEvents table, the `result` column contains values like "Failed" or "Success" - complete words. 
-                            When you search for `has "fail"`, it's looking for the exact word "fail", but the actual value is "Failed". 
-                            Since "fail" is not a complete word in the data, `has` won't find it. Use `contains "fail"` instead, 
-                            or use `has "Failed"` if you want the performance benefit of the indexed search.
-                        </p>
-                    </div>
+                    <button id="next-topic" class="flex items-center px-4 py-2 text-blue-600 hover:text-blue-800 disabled:text-gray-400 disabled:cursor-not-allowed">
+                        <span class="hidden sm:inline">Next</span>
+                        <i class="fas fa-chevron-right ml-2"></i>
+                    </button>
                 </div>
-
-                <div>
-                    <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">4. Selecting & Extending Columns</h3>
-                    <p class="mb-6"><code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">project</code> lets you pick which columns to display and rename them. <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">extend</code> creates a new column while keeping the existing ones.</p>
-                     <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
-                        <div class="flex space-x-2 absolute top-2 right-2">
-                            <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
-                        </div>
-                        <pre><code><span class="kql-table">AuthenticationEvents</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">extend</span> timestamp = <span class="kql-function">todatetime</span>(timestamp)
-<span class="kql-pipe">|</span> <span class="kql-keyword">extend</span> event_hour <span class="kql-pipe">=</span> <span class="kql-function">bin</span>(timestamp, 1h)
-<span class="kql-pipe">|</span> <span class="kql-keyword">project</span> timestamp, event_hour, result
-<span class="kql-pipe">|</span> <span class="kql-function">take</span> 10</code></pre>
-                    </div>
-                </div>
-            </section>
-            
-            <section id="part3" class="mb-16 scroll-mt-20">
-                <div class="mb-8">
-                    <div class="flex items-center mb-4">
-                        <div class="w-3 h-8 bg-green-500 rounded-full mr-4"></div>
-                        <h2 class="text-3xl font-bold text-gray-900">Part 3: Aggregation & Time-Based Analysis</h2>
-                    </div>
-                    <p class="text-lg text-gray-600 mb-6 leading-relaxed">KQL includes a rich library of functions for manipulating data. Here, we'll cover common string and datetime functions. We will also visualize time-series data by grouping events into time buckets, a crucial technique for trend analysis.</p>
-                </div>
-                
-                <div>
-                    <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">1. Summarizing with <code class="text-lg">bin()</code> for Time Charts</h3>
-                    <p class="mb-6">The <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">bin()</code> function groups data into fixed time intervals (e.g., hours, days). When combined with <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">summarize</code> and <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">render timechart</code>, it's a powerful way to visualize trends.</p>
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
-                        <div class="flex space-x-2 absolute top-2 right-2">
-                            <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
-                        </div>
-                        <pre><code><span class="kql-table">InboundBrowsing</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">extend</span> timestamp = <span class="kql-function">todatetime</span>(timestamp)
-<span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> <span class="kql-function">count()</span> <span class="kql-keyword">by</span> <span class="kql-function">bin</span>(timestamp, 1h)
-<span class="kql-pipe">|</span> <span class="kql-function">render</span> timechart</code></pre>
-                    </div>
-                    <div class="mt-6 bg-white p-4 rounded-lg shadow-md">
-                        <p class="text-center font-medium mb-2">Example Visualization: Browsing Activity Per Hour</p>
-                        <div class="chart-container">
-                            <canvas id="timeChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <div>
-                    <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">2. Advanced Aggregations</h3>
-                    <p class="mb-6">The <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">arg_max()</code> and <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">arg_min()</code> functions are powerful ways to find the most recent or earliest event for each item in a group. They return the entire row corresponding to the minimum or maximum value.</p>
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
-                        <div class="flex space-x-2 absolute top-2 right-2">
-                            <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
-                        </div>
-                        <pre><code><span class="kql-comment">// Find the earliest and latest authentication event for each user</span>
-<span class="kql-table">AuthenticationEvents</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> 
-    earliest_event_timestamp <span class="kql-pipe">=</span> <span class="kql-function">arg_min</span>(timestamp, timestamp), 
-    latest_event_timestamp <span class="kql-pipe">=</span> <span class="kql-function">arg_max</span>(timestamp, timestamp) 
-    <span class="kql-keyword">by</span> username
-<span class="kql-pipe">|</span> <span class="kql-function">take</span> 10</code></pre>
-                    </div>
-                </div>
-
-                <div>
-                    <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">3. Aggregating by IP Address</h3>
-                    <p class="mb-6">You can summarize by any column, including IP addresses, to find patterns in network activity. This query finds the top 10 IP addresses with the most authentication attempts.
-                    </p>
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
-                        <div class="flex space-x-2 absolute top-2 right-2">
-                            <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
-                        </div>
-                        <pre><code><span class="kql-table">AuthenticationEvents</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> Attempts <span class="kql-pipe">=</span> <span class="kql-function">count()</span> <span class="kql-keyword">by</span> src_ip
-<span class="kql-pipe">|</span> <span class="kql-keyword">top</span> 10 <span class="kql-keyword">by</span> Attempts <span class="kql-keyword">desc</span></code></pre>
-                    </div>
-                </div>
-            </section>
-            
-            <section id="part4" class="mb-16 scroll-mt-20">
-                <div class="mb-8">
-                    <div class="flex items-center mb-4">
-                        <div class="w-3 h-8 bg-yellow-500 rounded-full mr-4"></div>
-                        <h2 class="text-3xl font-bold text-gray-900">Part 4: Joining Tables</h2>
-                    </div>
-                    <p class="text-lg text-gray-600 mb-6 leading-relaxed">This section focuses on how to combine information from multiple tables to build a more complete picture of events.</p>
-                </div>
-                
-                <div>
-                    <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">1. The <code class="text-lg">join</code> Operator</h3>
-                    <p class="mb-6">The <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">join</code> operator combines rows from two tables based on a matching key column. The most common types are <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">inner</code> (returns only matching rows) and <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">leftouter</code> (returns all rows from the left table, plus matches from the right).</p>
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
-                        <div class="flex space-x-2 absolute top-2 right-2">
-                            <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
-                        </div>
-                        <pre><code><span class="kql-comment">// Find IT associate employees with failed logins</span>
-<span class="kql-table">AuthenticationEvents</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> result <span class="kql-pipe">==</span> <span class="kql-string">"Failed Login"</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">join</span> kind<span class="kql-pipe">=</span>inner (
-    <span class="kql-table">Employees</span>
-    <span class="kql-pipe">|</span> <span class="kql-keyword">where</span> role <span class="kql-pipe">==</span> <span class="kql-string">"IT associate"</span>
-) <span class="kql-keyword">on</span> username
-<span class="kql-pipe">|</span> <span class="kql-keyword">project</span> timestamp, employee_name <span class="kql-pipe">=</span> name</code></pre>
-                    </div>
-                </div>
-                <div>
-                    <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">2. Challenge: Joining Failed Logins with Employee Data</h3>
-                    <p class="mb-6">This challenge builds on our previous lessons. First, find the top 10 users with the most failed logins. Then, join that result with the <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">Employees</code> table to see their full name and role. This is a common security analysis task.</p>
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
-                        <div class="flex space-x-2 absolute top-2 right-2">
-                            <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
-                        </div>
-                        <pre><code><span class="kql-table">AuthenticationEvents</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> result <span class="kql-pipe">==</span> <span class="kql-string">"Failed Login"</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> FailedAttempts <span class="kql-pipe">=</span> <span class="kql-function">count()</span> <span class="kql-keyword">by</span> username
-<span class="kql-pipe">|</span> <span class="kql-keyword">top</span> 10 <span class="kql-keyword">by</span> FailedAttempts <span class="kql-keyword">desc</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">join</span> kind<span class="kql-pipe">=</span>inner (<span class="kql-table">Employees</span>) <span class="kql-keyword">on</span> username
-<span class="kql-pipe">|</span> <span class="kql-keyword">project</span> name, role, FailedAttempts</code></pre>
-                    </div>
-                </div>
-            </section>
-            
-            <section id="part5" class="mb-16 scroll-mt-20">
-                <div class="mb-8">
-                    <div class="flex items-center mb-4">
-                        <div class="w-3 h-8 bg-red-500 rounded-full mr-4"></div>
-                        <h2 class="text-3xl font-bold text-gray-900">Part 5: Advanced Concepts</h2>
-                    </div>
-                    <p class="text-lg text-gray-600 mb-6 leading-relaxed">To write cleaner and more powerful queries, KQL provides features like variables and in-memory tables. In this section, you'll learn how to use <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">let</code> statements to define reusable expressions and <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">datatable</code> to create temporary tables for filtering or testing.</p>
-                </div>
-                
-                 <div>
-                    <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">1. Reusable Expressions with <code class="text-lg">let</code></h3>
-                    <p class="mb-6">A <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">let</code> statement assigns a name to an expression or function. This is extremely useful for breaking complex queries into logical, readable parts.</p>
-                     <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
-                        <div class="flex space-x-2 absolute top-2 right-2">
-                            <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
-                        </div>
-                        <pre><code><span class="kql-comment">// Find the role of the user with the most failed logins</span>
-<span class="kql-keyword">let</span> FailedLogins <span class="kql-pipe">=</span> <span class="kql-table">AuthenticationEvents</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> result <span class="kql-pipe">==</span> <span class="kql-string">"Failed Login"</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> <span class="kql-function">count()</span> <span class="kql-keyword">by</span> username
-<span class="kql-pipe">|</span> <span class="kql-keyword">top</span> 1 <span class="kql-keyword">by</span> count_;
-<span class="kql-comment">// Now join that result to the Employees table</span>
-FailedLogins
-<span class="kql-pipe">|</span> <span class="kql-keyword">join</span> kind<span class="kql-pipe">=</span>inner <span class="kql-table">Employees</span> <span class="kql-keyword">on</span> username
-<span class="kql-pipe">|</span> <span class="kql-keyword">project</span> name, role, FailedLoginCount <span class="kql-pipe">=</span> count_</code></pre>
-                    </div>
-                </div>
-                
-                 <div>
-                    <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">2. In-Memory Tables with <code class="text-lg">datatable</code></h3>
-                    <p class="mb-6">The <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">datatable</code> operator lets you define a small, temporary table directly in your query. It's perfect for filtering against a known list of values, for example, a list of known malicious domains from a threat intelligence feed.</p>
-                     <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
-                        <div class="flex space-x-2 absolute top-2 right-2">
-                            <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
-                        </div>
-                        <pre><code><span class="kql-keyword">let</span> MaliciousDomains <span class="kql-pipe">=</span> <span class="kql-function">datatable</span>(url: <span class="kql-keyword">string</span>) [
-    <span class="kql-string">'badsite.com'</span>,
-    <span class="kql-string">'phishingsite.net'</span>,
-    <span class="kql-string">'virus.ru'</span>
-];
-<span class="kql-table">OutboundBrowsing</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> url <span class="kql-keyword">in</span> (MaliciousDomains)
-<span class="kql-pipe">|</span> <span class="kql-function">take</span> 10</code></pre>
-                    </div>
-                </div>
-            </section>
-
-            <section id="part6" class="mb-16 scroll-mt-20">
-                <div class="mb-8">
-                    <div class="flex items-center mb-4">
-                        <div class="w-3 h-8 bg-indigo-500 rounded-full mr-4"></div>
-                        <h2 class="text-3xl font-bold text-gray-900">Part 6: Challenge Queries</h2>
-                    </div>
-                    <p class="text-lg text-gray-600 mb-6 leading-relaxed">Now it's time to put everything together. These challenges require you to combine filtering, aggregation, and joining to find key insights in the data. Try to solve them yourself before revealing the solution.</p>
-                </div>
-
-                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 p-6 rounded-xl shadow-sm">
-                    <p class="font-semibold text-gray-800 text-lg">Challenge 1: Find the top 3 users with the most failed logins in the last 7 days.</p>
-                </div>
-                <button id="solution-btn-1" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium shadow-sm mt-4 mb-2">Show Solution</button>
-                <div id="solution-div-1" class="hidden mt-4">
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6 shadow-sm">
-                        <div class="flex space-x-2 absolute top-2 right-2">
-                            <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors duration-200">Copy</button>
-                        </div>
-                        <pre><code><span class="kql-table">AuthenticationEvents</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> timestamp <span class="kql-pipe">&gt;=</span> <span class="kql-function">ago</span>(7d) <span class="kql-keyword">and</span> result <span class="kql-pipe">==</span> <span class="kql-string">"Failed Login"</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> <span class="kql-function">count()</span> <span class="kql-keyword">by</span> username
-<span class="kql-pipe">|</span> <span class="kql-keyword">sort</span> <span class="kql-keyword">by</span> count_ <span class="kql-keyword">desc</span>
-<span class="kql-pipe">|</span> <span class="kql-function">take</span> 3</code></pre>
-                    </div>
-                </div>
-
-                <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 p-6 rounded-xl shadow-sm mt-12">
-                    <p class="font-semibold text-gray-800 text-lg">Challenge 2: Find the top 10 IP addresses with the most authentication attempts.</p>
-                </div>
-                <button id="solution-btn-2" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors duration-200 font-medium shadow-sm mt-4 mb-2">Show Solution</button>
-                <div id="solution-div-2" class="hidden mt-4">
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6 shadow-sm">
-                        <div class="flex space-x-2 absolute top-2 right-2">
-                            <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors duration-200">Copy</button>
-                        </div>
-                        <pre><code><span class="kql-table">AuthenticationEvents</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> Attempts <span class="kql-pipe">=</span> <span class="kql-function">count()</span> <span class="kql-keyword">by</span> src_ip
-<span class="kql-pipe">|</span> <span class="kql-keyword">top</span> 10 <span class="kql-keyword">by</span> Attempts <span class="kql-keyword">desc</span></code></pre>
-                    </div>
-                </div>
-
-                <div class="bg-gradient-to-r from-purple-50 to-violet-50 border border-purple-200 p-6 rounded-xl shadow-sm mt-12">
-                    <p class="font-semibold text-gray-800 text-lg">Challenge 3: Find the top 10 users with the most failed logins and show their full name and role.</p>
-                </div>
-                <button id="solution-btn-3" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors duration-200 font-medium shadow-sm mt-4 mb-2">Show Solution</button>
-                <div id="solution-div-3" class="hidden mt-4">
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6 shadow-sm">
-                        <div class="flex space-x-2 absolute top-2 right-2">
-                            <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors duration-200">Copy</button>
-                        </div>
-                        <pre><code><span class="kql-table">AuthenticationEvents</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> result <span class="kql-pipe">==</span> <span class="kql-string">"Failed Login"</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> FailedAttempts <span class="kql-pipe">=</span> <span class="kql-function">count()</span> <span class="kql-keyword">by</span> username
-<span class="kql-pipe">|</span> <span class="kql-keyword">top</span> 10 <span class="kql-keyword">by</span> FailedAttempts <span class="kql-keyword">desc</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">join</span> kind<span class="kql-pipe">=</span>inner (<span class="kql-table">Employees</span>) <span class="kql-keyword">on</span> username
-<span class="kql-pipe">|</span> <span class="kql-keyword">project</span> name, role, FailedAttempts</code></pre>
-                    </div>
-                </div>
-
-                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg mt-12">
-                    <p class="font-semibold text-gray-800">Challenge 4: Find the earliest and latest authentication event for each user.</p>
-                </div>
-                <button id="solution-btn-4" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium shadow-sm mt-4 mb-2">Show Solution</button>
-                <div id="solution-div-4" class="hidden mt-4">
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6 shadow-sm">
-                        <div class="flex space-x-2 absolute top-2 right-2">
-                            <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors duration-200">Copy</button>
-                        </div>
-                        <pre><code><span class="kql-table">AuthenticationEvents</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> 
-    earliest_event_timestamp <span class="kql-pipe">=</span> <span class="kql-function">arg_min</span>(timestamp, timestamp), 
-    latest_event_timestamp <span class="kql-pipe">=</span> <span class="kql-function">arg_max</span>(timestamp, timestamp) 
-    <span class="kql-keyword">by</span> username
-<span class="kql-pipe">|</span> <span class="kql-function">take</span> 10</code></pre>
-                    </div>
-                </div>
-
-                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg mt-12">
-                    <p class="font-semibold text-gray-800">Challenge 5: Find all users with successful logins from China and, from that list, find which of them also have successful logins from Russia.</p>
-                </div>
-                <button id="solution-btn-5" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium shadow-sm mt-4 mb-2">Show Solution</button>
-                <div id="solution-div-5" class="hidden mt-4">
-                    <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6 shadow-sm">
-                        <div class="flex space-x-2 absolute top-2 right-2">
-                            <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors duration-200">Copy</button>
-                        </div>
-                        <pre><code><span class="kql-keyword">let</span> C <span class="kql-pipe">=</span> <span class="kql-table">AuthenticationEvents</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> <span class="kql-keyword">not</span>(<span class="kql-function">ipv4_is_private</span>(src_ip))
-<span class="kql-pipe">|</span> <span class="kql-keyword">extend</span> timestamp <span class="kql-pipe">=</span> <span class="kql-function">todatetime</span>(timestamp)
-<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> <span class="kql-function">isnotempty</span>(src_ip)
-    <span class="kql-keyword">and</span> result <span class="kql-pipe">==</span> <span class="kql-string">"Successful Login"</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">extend</span> Location <span class="kql-pipe">=</span> <span class="kql-function">geo_info_from_ip_address</span>(src_ip)
-<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> Location <span class="kql-keyword">contains</span> <span class="kql-string">"China"</span>
-<span class="kql-pipe">|</span> <span class="kql-function">distinct</span> username;
-<span class="kql-table">AuthenticationEvents</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> <span class="kql-keyword">not</span>(<span class="kql-function">ipv4_is_private</span>(src_ip))
-<span class="kql-pipe">|</span> <span class="kql-keyword">extend</span> Location <span class="kql-pipe">=</span> <span class="kql-function">geo_info_from_ip_address</span>(src_ip)
-<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> username <span class="kql-keyword">in</span> (C) <span class="kql-keyword">and</span> Location <span class="kql-keyword">contains</span> <span class="kql-string">"Russia"</span>
-<span class="kql-pipe">|</span> <span class="kql-function">distinct</span> username</code></pre>
-                    </div>
-                </div>
-
-            </section>
-
+            </div>
         </main>
     </div>
 
-    <!-- The Modal -->
-    <div id="explanationModal" class="modal">
-        <!-- Modal content -->
-        <div class="modal-content text-gray-900">
-            <span class="close-btn">&times;</span>
-            <h3 class="text-xl font-bold mb-4">Query Explanation</h3>
-            <div id="modal-content" class="text-gray-700">
-                <div class="flex justify-center items-center py-10">
-                    <div class="spinner"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    
-    const copyButtons = document.querySelectorAll('.copy-btn');
-    copyButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const codeBlock = btn.closest('.code-block');
-            const code = codeBlock.querySelector('pre code').innerText;
-            
-            const el = document.createElement('textarea');
-            el.value = code;
-            document.body.appendChild(el);
-            el.select();
-            
-            try {
-                document.execCommand('copy');
-                btn.textContent = 'Copied!';
-            } catch (err) {
-                console.error('Failed to copy text: ', err);
-                btn.textContent = 'Error';
+    <script>
+        // Enhanced Learning Management System with Content Manager Integration
+        class KustoLearningSystem {
+            constructor(progressTracker = null) {
+                this.progressTracker = progressTracker;
+                this.contentManager = new ContentManager(progressTracker);
+                this.currentSession = null;
+                this.currentTopic = null;
+                this.completedSessions = new Set(JSON.parse(localStorage.getItem('kustoCompletedSessions') || '[]'));
+                this.searchIndex = null;
+                this.init();
             }
-            
-            document.body.removeChild(el);
-            
-            setTimeout(() => {
-                btn.textContent = 'Copy';
-            }, 2000);
-        });
-    });
 
-    const solutionBtn1 = document.getElementById('solution-btn-1');
-    const solutionDiv1 = document.getElementById('solution-div-1');
-    solutionBtn1.addEventListener('click', () => {
-        solutionDiv1.classList.toggle('hidden');
-        solutionBtn1.textContent = solutionDiv1.classList.contains('hidden') ? 'Show Solution' : 'Hide Solution';
-    });
-
-    const solutionBtn2 = document.getElementById('solution-btn-2');
-    const solutionDiv2 = document.getElementById('solution-div-2');
-    solutionBtn2.addEventListener('click', () => {
-        solutionDiv2.classList.toggle('hidden');
-        solutionBtn2.textContent = solutionDiv2.classList.contains('hidden') ? 'Show Solution' : 'Hide Solution';
-    });
-
-    const solutionBtn3 = document.getElementById('solution-btn-3');
-    const solutionDiv3 = document.getElementById('solution-div-3');
-    solutionBtn3.addEventListener('click', () => {
-        solutionDiv3.classList.toggle('hidden');
-        solutionBtn3.textContent = solutionDiv3.classList.contains('hidden') ? 'Show Solution' : 'Hide Solution';
-    });
-
-    const solutionBtn4 = document.getElementById('solution-btn-4');
-    const solutionDiv4 = document.getElementById('solution-div-4');
-    solutionBtn4.addEventListener('click', () => {
-        solutionDiv4.classList.toggle('hidden');
-        solutionBtn4.textContent = solutionDiv4.classList.contains('hidden') ? 'Show Solution' : 'Hide Solution';
-    });
-
-    const solutionBtn5 = document.getElementById('solution-btn-5');
-    const solutionDiv5 = document.getElementById('solution-div-5');
-    solutionBtn5.addEventListener('click', () => {
-        solutionDiv5.classList.toggle('hidden');
-        solutionBtn5.textContent = solutionDiv5.classList.contains('hidden') ? 'Show Solution' : 'Hide Solution';
-    });
-
-    const ctx = document.getElementById('timeChart').getContext('2d');
-    const timeChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '11:00'],
-            datasets: [{
-                label: 'Failed Logins',
-                data: [5, 8, 15, 9, 12, 7, 6, 10, 18, 22, 14, 11],
-                backgroundColor: 'rgba(220, 38, 38, 0.1)',
-                borderColor: 'rgba(220, 38, 38, 0.8)',
-                borderWidth: 2,
-                tension: 0.4,
-                fill: true,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Number of Events'
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Time of Day (Hourly bins)'
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: '#f8f8f8',
-                    titleColor: '#333333',
-                    bodyColor: '#555555',
-                    padding: 10,
-                    cornerRadius: 4,
+            async init() {
+                try {
+                    await this.contentManager.loadConfiguration();
+                    await this.setupSearch();
+                    this.setupNavigation();
+                    this.setupMobileNav();
+                    this.setupTopicNavigation();
+                    this.updateProgress();
+                    this.loadInitialContent();
+                    this.hideLoadingScreen();
+                } catch (error) {
+                    console.error('Failed to initialize learning system:', error);
+                    this.showError('Failed to load learning platform. Please refresh the page.');
                 }
             }
-        }
-    });
 
-    const sections = document.querySelectorAll('main section');
-    const navLinks = document.querySelectorAll('.nav-link');
-    
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                navLinks.forEach(link => {
-                    link.classList.remove('active');
-                    if (link.getAttribute('href').substring(1) === entry.target.id) {
-                        link.classList.add('active');
-                    }
+            hideLoadingScreen() {
+                document.getElementById('loading-screen').style.display = 'none';
+            }
+
+            showError(message) {
+                document.getElementById('content-container').innerHTML = `
+                    <div class="text-center py-20">
+                        <i class="fas fa-exclamation-triangle text-red-500 text-4xl mb-4"></i>
+                        <h2 class="text-xl font-bold text-gray-900 mb-2">Oops! Something went wrong</h2>
+                        <p class="text-gray-600 mb-6">${message}</p>
+                        <button onclick="location.reload()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-redo mr-2"></i>Retry
+                        </button>
+                    </div>
+                `;
+                this.hideLoadingScreen();
+            }
+
+            async setupSearch() {
+                const searchData = this.contentManager.createSearchIndex();
+                this.searchIndex = new Fuse(searchData, {
+                    keys: ['title', 'description', 'content', 'tags'],
+                    threshold: 0.3,
+                    includeMatches: true
+                });
+
+                // Desktop search
+                const searchInput = document.getElementById('search-input');
+                let searchTimeout;
+                searchInput.addEventListener('input', (e) => {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        this.handleSearch(e.target.value);
+                    }, 300);
+                });
+
+                // Mobile search
+                const mobileSearchInput = document.getElementById('mobile-search-input');
+                mobileSearchInput.addEventListener('input', (e) => {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        this.handleSearch(e.target.value);
+                    }, 300);
+                });
+
+                document.getElementById('clear-search').addEventListener('click', () => {
+                    this.clearSearch();
                 });
             }
+
+            handleSearch(query) {
+                const searchResults = document.getElementById('search-results');
+                const searchResultsContent = document.getElementById('search-results-content');
+
+                if (!query.trim()) {
+                    searchResults.classList.add('hidden');
+                    return;
+                }
+
+                const results = this.searchIndex.search(query);
+                if (results.length === 0) {
+                    searchResultsContent.innerHTML = '<p class="text-gray-600 text-sm">No results found</p>';
+                } else {
+                    searchResultsContent.innerHTML = results.slice(0, 10).map(result => {
+                        const item = result.item;
+                        
+                        // Check if the session is accessible
+                        const session = this.contentManager.getSession(item.sessionId || item.id);
+                        const canAccess = session ? this.canAccessSession(session) : false;
+                        
+                        const icon = item.type === 'session' ? 'fas fa-book' : 'fas fa-bookmark';
+                        const badge = item.type === 'session' ? 
+                            '<span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">Session</span>' :
+                            '<span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Topic</span>';
+                        
+                        const accessibilityClass = !canAccess ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md cursor-pointer';
+                        const lockIcon = !canAccess ? '<i class="fas fa-lock text-gray-400 mr-2"></i>' : '';
+                        
+                        return `
+                            <div class="flex items-center p-3 bg-white rounded-lg shadow-sm transition-shadow ${accessibilityClass} search-result-item" 
+                                 data-session="${item.sessionId || item.id}" data-topic="${item.type === 'topic' ? item.id : ''}" data-accessible="${canAccess}">
+                                <i class="${icon} text-gray-400 mr-3"></i>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        ${lockIcon}
+                                        <span class="font-medium text-gray-900">${this.highlightMatch(item.title, result.matches)}</span>
+                                        ${badge}
+                                        ${!canAccess ? '<span class="px-2 py-1 text-xs bg-orange-100 text-orange-800 rounded-full">Coming Soon</span>' : ''}
+                                    </div>
+                                    ${item.sessionTitle && item.type === 'topic' ? 
+                                        `<p class="text-xs text-gray-500">in ${item.sessionTitle}</p>` : 
+                                        `<p class="text-sm text-gray-600">${item.description || ''}</p>`
+                                    }
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    // Add click handlers to search results
+                    document.querySelectorAll('.search-result-item').forEach(item => {
+                        item.addEventListener('click', () => {
+                            const isAccessible = item.dataset.accessible === 'true';
+                            if (!isAccessible) {
+                                this.showToast('This content is not yet available', 'info');
+                                return;
+                            }
+                            
+                            const sessionId = item.dataset.session;
+                            const topicId = item.dataset.topic;
+                            this.loadContent(sessionId, topicId);
+                            this.clearSearch();
+                        });
+                    });
+                }
+
+                searchResults.classList.remove('hidden');
+            }
+
+            highlightMatch(text, matches) {
+                if (!matches) return text;
+                
+                let highlightedText = text;
+                matches.forEach(match => {
+                    if (match.key === 'title') {
+                        match.indices.forEach(([start, end]) => {
+                            const matchedText = text.substring(start, end + 1);
+                            highlightedText = highlightedText.replace(
+                                matchedText, 
+                                `<span class="search-result-highlight">${matchedText}</span>`
+                            );
+                        });
+                    }
+                });
+                return highlightedText;
+            }
+
+            clearSearch() {
+                document.getElementById('search-results').classList.add('hidden');
+                document.getElementById('search-input').value = '';
+                document.getElementById('mobile-search-input').value = '';
+            }
+
+            setupNavigation() {
+                const nav = document.getElementById('desktop-nav');
+                nav.innerHTML = this.generateNavigationHTML();
+                this.bindNavigationEvents();
+            }
+
+            setupMobileNav() {
+                const openBtn = document.getElementById('open-mobile-nav');
+                const closeBtn = document.getElementById('close-mobile-nav');
+                const backdrop = document.getElementById('mobile-backdrop');
+                const mobileNav = document.getElementById('mobile-nav');
+                const mobileNavContent = document.getElementById('mobile-nav-content');
+
+                // Copy desktop nav content to mobile nav
+                mobileNavContent.innerHTML = this.generateNavigationHTML();
+                this.bindNavigationEvents(true);
+
+                openBtn.addEventListener('click', () => {
+                    mobileNav.classList.add('open');
+                    backdrop.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                });
+
+                const closeMobileNav = () => {
+                    mobileNav.classList.remove('open');
+                    backdrop.classList.add('hidden');
+                    document.body.style.overflow = '';
+                };
+
+                closeBtn.addEventListener('click', closeMobileNav);
+                backdrop.addEventListener('click', closeMobileNav);
+            }
+
+            setupTopicNavigation() {
+                const prevBtn = document.getElementById('prev-topic');
+                const nextBtn = document.getElementById('next-topic');
+                const toggleBtn = document.getElementById('toggle-topic-completion');
+                const mobileCompleteBtn = document.getElementById('mobile-complete-topic');
+
+                prevBtn.addEventListener('click', () => this.navigateToAdjacentTopic(-1));
+                nextBtn.addEventListener('click', () => this.navigateToAdjacentTopic(1));
+                
+                toggleBtn.addEventListener('click', () => this.toggleTopicCompletion());
+                mobileCompleteBtn.addEventListener('click', () => this.toggleTopicCompletion());
+            }
+
+            generateNavigationHTML() {
+                const sessions = this.contentManager.getSessions();
+                return sessions.map(session => {
+                    const isCompleted = this.completedSessions.has(session.id);
+                    const canAccess = this.canAccessSession(session);
+                    const progressInfo = this.contentManager.getSessionProgress(session.id);
+                    
+                    return `
+                        <div class="session-group mb-6 ${session.id !== 'session-01' ? 'collapsed' : ''} ${!canAccess ? 'disabled' : ''}" data-session="${session.id}">
+                            <div class="session-header cursor-pointer p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="progress-indicator ${isCompleted ? 'completed' : (progressInfo.current ? 'current' : (!canAccess ? 'locked' : ''))}">
+                                            ${isCompleted ? '<i class="fas fa-check text-xs"></i>' : 
+                                              (!canAccess ? '<i class="fas fa-lock text-xs"></i>' : progressInfo.completed)}
+                                        </div>
+                                        <div>
+                                            <h3 class="font-semibold text-gray-900 text-sm">${session.title}</h3>
+                                            <div class="flex items-center gap-2 mt-1">
+                                                <span class="text-xs px-2 py-1 rounded-full ${this.getDifficultyBadge(session.difficulty)}">${session.difficulty}</span>
+                                                <span class="text-xs text-gray-500">${session.estimatedTime}</span>
+                                                ${!canAccess ? '<span class="text-xs px-2 py-1 rounded-full bg-orange-100 text-orange-800">Coming Soon</span>' : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <i class="fas fa-chevron-down toggle-icon text-gray-400"></i>
+                                </div>
+                                ${session.prerequisites.length > 0 ? `
+                                    <div class="mt-2 text-xs ${canAccess ? 'text-green-600' : 'text-orange-600'}">
+                                        <i class="fas ${canAccess ? 'fa-check-circle' : 'fa-info-circle'} mr-1"></i>
+                                        ${canAccess ? 'Requirements met:' : ''} ${session.prerequisites.join(', ')}
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div class="session-content mt-2 pl-4">
+                                <div class="space-y-1">
+                                    ${session.topics.map((topic, index) => {
+                                        const isTopicComplete = this.contentManager.isTopicComplete(session.id, topic.id);
+                                        return `
+                                            <div class="nav-link group flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg transition-all duration-200 ${!canAccess ? 'pointer-events-none text-gray-400' : 'hover:bg-blue-50'}" data-session="${session.id}" data-topic="${topic.id}">
+                                                <div class="flex items-center flex-1">
+                                                    <div class="w-5 h-5 flex items-center justify-center mr-3">
+                                                        ${!canAccess ? '<i class="fas fa-lock text-gray-300 text-xs"></i>' :
+                                                          (isTopicComplete ? 
+                                                            '<i class="fas fa-check-circle text-green-500 text-xs"></i>' :
+                                                            '<span class="w-2 h-2 bg-blue-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></span>')
+                                                        }
+                                                    </div>
+                                                    <i class="${this.getTopicIcon(topic.type)} text-xs mr-2 opacity-60"></i>
+                                                    <a href="#${session.id}/${topic.id}" class="flex-1 ${!canAccess ? 'pointer-events-none' : 'hover:text-blue-700'}">${topic.title}</a>
+                                                </div>
+                                                <div class="flex items-center gap-2">
+                                                    ${topic.duration ? `<span class="text-xs text-gray-400">${topic.duration}</span>` : ''}
+                                                    ${isTopicComplete && canAccess ? 
+                                                        `<button class="undo-topic opacity-0 group-hover:opacity-100 text-orange-500 hover:text-orange-600 transition-opacity text-xs ml-2" data-session="${session.id}" data-topic="${topic.id}" title="Mark as incomplete">
+                                                            <i class="fas fa-undo"></i>
+                                                        </button>` : ''
+                                                    }
+                                                </div>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            getDifficultyBadge(difficulty) {
+                const badges = {
+                    'Beginner': 'bg-green-100 text-green-800',
+                    'Intermediate': 'bg-yellow-100 text-yellow-800',
+                    'Advanced': 'bg-red-100 text-red-800'
+                };
+                return badges[difficulty] || 'bg-gray-100 text-gray-800';
+            }
+
+            getTopicIcon(type) {
+                const icons = {
+                    'overview': 'fas fa-info-circle',
+                    'setup': 'fas fa-cog',
+                    'tutorial': 'fas fa-book-open',
+                    'practice': 'fas fa-dumbbell'
+                };
+                return icons[type] || 'fas fa-circle';
+            }
+
+            canAccessSession(session) {
+                // Grey out session-02 as it's under development
+                if (session.id === 'session-02') {
+                    return false;
+                }
+                // All other sessions are freely accessible
+                return true;
+            }
+
+            bindNavigationEvents(isMobile = false) {
+                const container = isMobile ? document.getElementById('mobile-nav-content') : document.getElementById('desktop-nav');
+
+                // Session header toggle
+                container.querySelectorAll('.session-header').forEach(header => {
+                    header.addEventListener('click', (e) => {
+                        const sessionGroup = header.closest('.session-group');
+                        sessionGroup.classList.toggle('collapsed');
+                    });
+                });
+
+                // Navigation links
+                container.querySelectorAll('.nav-link a').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const navLink = link.closest('.nav-link');
+                        const sessionId = navLink.dataset.session;
+                        const topicId = navLink.dataset.topic;
+                        this.loadContent(sessionId, topicId);
+                        
+                        // Close mobile nav if open
+                        if (isMobile) {
+                            document.getElementById('close-mobile-nav').click();
+                        }
+                    });
+                });
+
+                // Undo buttons for marking topics as incomplete
+                container.querySelectorAll('.undo-topic').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const sessionId = button.dataset.session;
+                        const topicId = button.dataset.topic;
+                        
+                        // Mark as incomplete
+                        this.contentManager.markTopicIncomplete(sessionId, topicId);
+                        
+                        // Refresh navigation and progress
+                        this.setupNavigation();
+                        this.updateProgress();
+                        
+                        // Update mobile nav if needed
+                        if (!isMobile) {
+                            this.setupMobileNav();
+                        }
+                        
+                        // Update page title
+                        const progress = this.progressTracker.getOverallProgress();
+                        if (progress.overallProgress > 0) {
+                            document.title = `Kusto Learning (${progress.overallProgress}% Complete)`;
+                        } else {
+                            document.title = 'Kusto Learning Docs';
+                        }
+                    });
+                });
+            }
+
+            updateProgress() {
+                const sessions = this.contentManager.getSessions();
+                let totalTopics = 0;
+                let completedTopics = 0;
+                
+                // Count completed topics across all accessible sessions
+                sessions.forEach(session => {
+                    if (this.canAccessSession(session)) {
+                        totalTopics += session.topics.length;
+                        session.topics.forEach(topic => {
+                            if (this.contentManager.isTopicComplete(session.id, topic.id)) {
+                                completedTopics++;
+                            }
+                        });
+                    }
+                });
+                
+                const percentage = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
+                
+                document.getElementById('progress-percentage').textContent = `${percentage}%`;
+                document.getElementById('progress-bar').style.width = `${percentage}%`;
+                
+                // Update mobile progress as well
+                document.getElementById('mobile-progress-percentage').textContent = `${percentage}%`;
+                document.getElementById('mobile-progress-bar').style.width = `${percentage}%`;
+            }
+
+            loadInitialContent() {
+                // Check URL hash for initial content
+                const hash = window.location.hash.slice(1);
+                if (hash) {
+                    const [sessionId, topicId] = hash.split('/');
+                    if (sessionId) {
+                        this.loadContent(sessionId, topicId);
+                        return;
+                    }
+                }
+                
+                // Load the first session by default
+                this.loadContent('session-01', 'introduction');
+            }
+
+            async loadContent(sessionId, topicId = null) {
+                const session = this.contentManager.getSession(sessionId);
+                if (!session) return;
+
+                this.currentSession = sessionId;
+                this.currentTopic = topicId;
+
+                // Update URL without page reload
+                const url = topicId ? `#${sessionId}/${topicId}` : `#${sessionId}`;
+                history.pushState({ sessionId, topicId }, '', url);
+
+                // Show loading indicator
+                const contentContainer = document.getElementById('content-container');
+                
+                // Dispose of any existing Monaco editors
+                if (window.monacoManager) {
+                    window.monacoManager.disposeAllEditors();
+                }
+                
+                contentContainer.innerHTML = `
+                    <div class="flex items-center justify-center py-20">
+                        <div class="text-center">
+                            <div class="loading-spinner"></div>
+                            <p class="text-gray-600 mt-4">Loading content...</p>
+                        </div>
+                    </div>
+                `;
+
+                // Load content
+                let content;
+                if (topicId) {
+                    content = await this.contentManager.loadTopicContent(sessionId, topicId);
+                } else {
+                    content = this.generateSessionOverview(session);
+                }
+
+                contentContainer.innerHTML = content;
+
+                // Process code blocks with Monaco Editor
+                if (window.monacoManager) {
+                    await window.monacoManager.processCodeBlocks();
+                }
+
+                // Update navigation states
+                this.updateActiveNavigation(sessionId, topicId);
+                this.updateBreadcrumb(sessionId, topicId);
+                this.updateTopicNavigation(sessionId, topicId);
+
+                // Track progress if we have a progress tracker and viewing a topic
+                if (this.progressTracker && topicId) {
+                    this.progressTracker.markTopicComplete(sessionId, topicId);
+                }
+
+                // Bind any interactive elements
+                this.bindContentEvents();
+
+                // Scroll to top
+                contentContainer.scrollTop = 0;
+            }
+
+            generateSessionOverview(session) {
+                const progress = this.contentManager.getSessionProgress(session.id);
+                return `
+                    <div class="max-w-4xl">
+                        <header class="mb-12">
+                            <div class="border-b border-stone-200 pb-8">
+                                <h1 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">${session.title}</h1>
+                                <p class="text-lg text-gray-600 max-w-3xl mb-6">${session.description}</p>
+                                <div class="flex items-center gap-4 mb-6">
+                                    <span class="px-3 py-1 text-sm rounded-full ${this.getDifficultyBadge(session.difficulty)}">${session.difficulty}</span>
+                                    <span class="text-sm text-gray-600">⏱️ ${session.estimatedTime}</span>
+                                    <span class="text-sm text-gray-600">📚 ${session.topics.length} topics</span>
+                                </div>
+                                
+                                <!-- Progress Bar -->
+                                <div class="bg-gray-100 rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-sm font-medium text-gray-700">Session Progress</span>
+                                        <span class="text-sm text-gray-600">${progress.completed}/${progress.total} completed</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-3">
+                                        <div class="bg-green-500 h-3 rounded-full transition-all duration-300" style="width: ${progress.percentage}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </header>
+
+                        <!-- Topics Grid -->
+                        <div class="grid gap-4 md:grid-cols-2">
+                            ${session.topics.map((topic, index) => {
+                                const isComplete = this.contentManager.isTopicComplete(session.id, topic.id);
+                                return `
+                                    <div class="border rounded-lg p-6 hover:shadow-md transition-shadow cursor-pointer topic-card ${isComplete ? 'bg-green-50 border-green-200' : 'bg-white'}" 
+                                         onclick="window.kustoLearning.loadContent('${session.id}', '${topic.id}')">
+                                        <div class="flex items-start justify-between mb-3">
+                                            <div class="flex items-center">
+                                                <div class="w-8 h-8 ${isComplete ? 'bg-green-100' : 'bg-blue-100'} rounded-lg flex items-center justify-center mr-3">
+                                                    ${isComplete ? 
+                                                        '<i class="fas fa-check text-green-600"></i>' :
+                                                        `<i class="${this.getTopicIcon(topic.type)} text-blue-600"></i>`
+                                                    }
+                                                </div>
+                                                <div>
+                                                    <h3 class="font-semibold text-gray-900">${topic.title}</h3>
+                                                    <span class="text-xs px-2 py-1 ${this.getTypeColor(topic.type)} rounded-full">${topic.type}</span>
+                                                </div>
+                                            </div>
+                                            ${topic.duration ? `<span class="text-sm text-gray-500">${topic.duration}</span>` : ''}
+                                        </div>
+                                        <p class="text-gray-600 text-sm">${topic.description || 'Learn the fundamentals of this topic'}</p>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                        
+                        ${session.prerequisites.length > 0 ? `
+                            <div class="mt-8 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                                <h3 class="font-medium text-orange-800 mb-2">Prerequisites</h3>
+                                <p class="text-orange-700 text-sm">Make sure you've completed: ${session.prerequisites.join(', ')}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            getTypeColor(type) {
+                const colors = {
+                    'overview': 'bg-blue-100 text-blue-800',
+                    'setup': 'bg-green-100 text-green-800',
+                    'tutorial': 'bg-purple-100 text-purple-800',
+                    'practice': 'bg-orange-100 text-orange-800'
+                };
+                return colors[type] || 'bg-gray-100 text-gray-800';
+            }
+
+            updateActiveNavigation(sessionId, topicId) {
+                // Remove all active states
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+
+                // Add active state to current link
+                if (topicId) {
+                    document.querySelectorAll(`[data-session="${sessionId}"][data-topic="${topicId}"]`).forEach(link => {
+                        link.classList.add('active');
+                    });
+                }
+            }
+
+            updateBreadcrumb(sessionId, topicId) {
+                const breadcrumb = document.getElementById('breadcrumb');
+                const session = this.contentManager.getSession(sessionId);
+                
+                if (!session) {
+                    breadcrumb.classList.add('hidden');
+                    return;
+                }
+
+                let breadcrumbHTML = `<a href="#${sessionId}" class="hover:text-blue-600">${session.title}</a>`;
+                
+                if (topicId) {
+                    const topic = this.contentManager.getTopic(sessionId, topicId);
+                    if (topic) {
+                        breadcrumbHTML += ` <span class="mx-2">/</span> <span class="text-gray-900">${topic.title}</span>`;
+                    }
+                }
+
+                breadcrumb.innerHTML = breadcrumbHTML;
+                breadcrumb.classList.remove('hidden');
+            }
+
+            updateTopicNavigation(sessionId, topicId) {
+                const navigation = document.getElementById('topic-navigation');
+                const prevBtn = document.getElementById('prev-topic');
+                const nextBtn = document.getElementById('next-topic');
+                const toggleBtn = document.getElementById('toggle-topic-completion');
+                const mobileCompleteBtn = document.getElementById('mobile-complete-topic');
+
+                if (!topicId) {
+                    navigation.classList.add('hidden');
+                    mobileCompleteBtn.classList.add('hidden');
+                    return;
+                }
+
+                const session = this.contentManager.getSession(sessionId);
+                const currentTopicIndex = session.topics.findIndex(t => t.id === topicId);
+                
+                // Previous topic
+                prevBtn.disabled = currentTopicIndex <= 0;
+                
+                // Next topic
+                nextBtn.disabled = currentTopicIndex >= session.topics.length - 1;
+                
+                // Toggle completion button
+                const isComplete = this.contentManager.isTopicComplete(sessionId, topicId);
+                if (isComplete) {
+                    toggleBtn.innerHTML = '<i class="fas fa-undo"></i><span class="hidden sm:inline">Mark Incomplete</span>';
+                    toggleBtn.className = 'px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors flex items-center gap-2';
+                } else {
+                    toggleBtn.innerHTML = '<i class="fas fa-check"></i><span class="hidden sm:inline">Complete Topic</span>';
+                    toggleBtn.className = 'px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2';
+                }
+                
+                navigation.classList.remove('hidden');
+                mobileCompleteBtn.classList.remove('hidden');
+            }
+
+            navigateToAdjacentTopic(direction) {
+                if (!this.currentSession || !this.currentTopic) return;
+
+                const session = this.contentManager.getSession(this.currentSession);
+                const currentIndex = session.topics.findIndex(t => t.id === this.currentTopic);
+                const newIndex = currentIndex + direction;
+
+                if (newIndex >= 0 && newIndex < session.topics.length) {
+                    const newTopic = session.topics[newIndex];
+                    this.loadContent(this.currentSession, newTopic.id);
+                }
+            }
+
+            toggleTopicCompletion() {
+                if (!this.currentSession || !this.currentTopic) return;
+                
+                const isCompleted = this.contentManager.isTopicComplete(this.currentSession, this.currentTopic);
+                
+                if (isCompleted) {
+                    // Mark as incomplete
+                    this.contentManager.markTopicIncomplete(this.currentSession, this.currentTopic);
+                    this.showToast('Topic marked as incomplete', 'info');
+                } else {
+                    // Mark as complete
+                    this.contentManager.markTopicComplete(this.currentSession, this.currentTopic);
+                    this.showToast('Topic completed! 🎉', 'success');
+                }
+                
+                this.updateTopicNavigation(this.currentSession, this.currentTopic);
+                this.setupNavigation(); // Refresh navigation to show completion
+                this.updateProgress();
+                
+                // Update page title
+                const progress = this.progressTracker.getOverallProgress();
+                if (progress.overallProgress > 0) {
+                    document.title = `Kusto Learning (${progress.overallProgress}% Complete)`;
+                } else {
+                    document.title = 'Kusto Learning Docs';
+                }
+            }
+
+            showToast(message, type = 'info') {
+                const toast = document.createElement('div');
+                toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg text-white transition-all duration-300 transform translate-x-full ${
+                    type === 'success' ? 'bg-green-600' : 
+                    type === 'error' ? 'bg-red-600' : 'bg-blue-600'
+                }`;
+                toast.textContent = message;
+                
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.classList.remove('translate-x-full');
+                }, 100);
+                
+                setTimeout(() => {
+                    toast.classList.add('translate-x-full');
+                    setTimeout(() => {
+                        document.body.removeChild(toast);
+                    }, 300);
+                }, 3000);
+            }
+
+            bindContentEvents() {
+                // Copy button functionality for code blocks
+                const copyButtons = document.querySelectorAll('.copy-btn');
+                copyButtons.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const codeBlock = btn.closest('.code-block');
+                        const code = codeBlock.querySelector('pre code').innerText;
+                        
+                        navigator.clipboard.writeText(code).then(() => {
+                            btn.textContent = 'Copied!';
+                            setTimeout(() => {
+                                btn.textContent = 'Copy';
+                            }, 2000);
+                        }).catch(() => {
+                            btn.textContent = 'Error';
+                            setTimeout(() => {
+                                btn.textContent = 'Copy';
+                            }, 2000);
+                        });
+                    });
+                });
+
+                // Any other interactive elements would be bound here
+            }
+        }
+
+        // Handle browser navigation
+        window.addEventListener('popstate', (e) => {
+            if (window.kustoLearning && e.state) {
+                window.kustoLearning.loadContent(e.state.sessionId, e.state.topicId);
+            }
         });
-    }, { rootMargin: '-50% 0px -50% 0px', threshold: 0 });
 
-    sections.forEach(section => {
-        observer.observe(section);
-    });
-});
-</script>
-
+        // Initialize the learning system when DOM is loaded
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Initialize simple progress tracking with local storage
+            const progressTracker = {
+                progress: JSON.parse(localStorage.getItem('kusto-learning-progress') || '{}'),
+                
+                markTopicComplete(sessionId, topicId) {
+                    if (!this.progress[sessionId]) {
+                        this.progress[sessionId] = {};
+                    }
+                    this.progress[sessionId][topicId] = { completed: true, completedAt: new Date().toISOString() };
+                    localStorage.setItem('kusto-learning-progress', JSON.stringify(this.progress));
+                },
+                
+                markTopicIncomplete(sessionId, topicId) {
+                    if (this.progress[sessionId] && this.progress[sessionId][topicId]) {
+                        delete this.progress[sessionId][topicId];
+                        // Clean up empty session objects
+                        if (Object.keys(this.progress[sessionId]).length === 0) {
+                            delete this.progress[sessionId];
+                        }
+                        localStorage.setItem('kusto-learning-progress', JSON.stringify(this.progress));
+                    }
+                },
+                
+                isTopicComplete(sessionId, topicId) {
+                    return this.progress[sessionId]?.[topicId]?.completed || false;
+                },
+                
+                getSessionProgress(sessionId) {
+                    return this.progress[sessionId] || {};
+                },
+                
+                getOverallProgress() {
+                    // This method should be consistent with updateProgress method
+                    // Return a simple structure for title updates
+                    let totalCompleted = 0;
+                    let totalTopics = 0;
+                    
+                    for (const sessionId in this.progress) {
+                        const sessionProgress = this.progress[sessionId];
+                        for (const topicId in sessionProgress) {
+                            totalTopics++;
+                            if (sessionProgress[topicId].completed) {
+                                totalCompleted++;
+                            }
+                        }
+                    }
+                    
+                    const overallProgress = totalTopics > 0 ? Math.round((totalCompleted / totalTopics) * 100) : 0;
+                    
+                    return {
+                        totalCompleted,
+                        totalTopics,
+                        overallProgress
+                    };
+                }
+            };
+            
+            // Initialize the main learning system
+            window.kustoLearning = new KustoLearningSystem(progressTracker);
+            
+            // Update page title with progress indicator
+            const updateTitle = () => {
+                const progress = progressTracker.getOverallProgress();
+                if (progress.overallProgress > 0) {
+                    document.title = `Kusto Learning (${progress.overallProgress}% Complete)`;
+                }
+            };
+            
+            // Update title periodically
+            setInterval(updateTitle, 5000);
+            updateTitle();
+        });
+    </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-

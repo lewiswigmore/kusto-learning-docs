@@ -1,0 +1,87 @@
+<div class="content-section">
+    <div class="mb-8">
+        <div class="flex items-center mb-4">
+            <div class="w-3 h-8 bg-purple-500 rounded-full mr-4"></div>
+            <h2 class="text-3xl font-bold text-gray-900">Part 2: Filtering & Projecting</h2>
+        </div>
+        <p class="text-lg text-gray-600 mb-6 leading-relaxed">In this section, you'll learn how to get the specific data you need. We will cover filtering rows based on conditions using the powerful <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">where</code> operator, and then selecting, renaming, or even creating new columns using <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">project</code> and <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">extend</code>.</p>
+    </div>
+
+    <div>
+        <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">1. Filtering with <code class="text-lg">| where</code></h3>
+        <p class="mb-6">The <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">where</code> operator filters the data to only include rows that match your specified conditions. You can perform exact matches, partial matches, and check for empty values.</p>
+        <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
+            <div class="flex space-x-2 absolute top-2 right-2">
+                <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
+            </div>
+            <pre><code><span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> result <span class="kql-pipe">==</span> <span class="kql-string">"Failed Login"</span>
+<span class="kql-pipe">|</span> <span class="kql-function">take</span> 10</code></pre>
+        </div>
+    </div>
+
+    <div>
+        <h4 class="text-lg font-medium mb-4 mt-6">2. Optimization: Filter on Time First</h4>
+        <p class="mb-6">For optimal performance, always apply your time-based filter as the **first** <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">where</code> statement in your query. The KQL engine is highly optimized to prune data partitions by time, which can dramatically reduce the amount of data processed by subsequent operators. This is a critical best practice for large datasets.</p>
+         <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
+            <div class="flex space-x-2 absolute top-2 right-2">
+                <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
+            </div>
+            <pre><code><span class="kql-comment">// A well-optimized query filters on a timestamp first.</span>
+<span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> timestamp <span class="kql-pipe">&gt;=</span> <span class="kql-function">ago</span>(7d)
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> result <span class="kql-pipe">==</span> <span class="kql-string">"Successful Login"</span>
+<span class="kql-pipe">|</span> <span class="kql-function">count</span></code></pre>
+        </div>
+    </div>
+
+    <div>
+        <h4 class="text-lg font-medium mb-4 mt-6">3. Partial String Matches: <code class="text-md">contains</code> vs. <code class="text-md">has</code></h4>
+        <p class="mb-6">Both operators search for substrings, but they work differently. <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">contains</code> performs a full scan, while <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">has</code> uses a pre-built index for much faster searches on whole words (tokens).</p>
+        <div class="grid md:grid-cols-2 gap-4">
+            <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
+                <div class="flex space-x-2 absolute top-2 right-2">
+                    <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
+                </div>
+                <pre><code><span class="kql-comment">// This works because "fail" is a word in the 'result' column</span>
+<span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> result <span class="kql-keyword">contains</span> <span class="kql-string">"fail"</span>
+<span class="kql-pipe">|</span> <span class="kql-function">take</span> 10</code></pre>
+            </div>
+             <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
+                <div class="flex space-x-2 absolute top-2 right-2">
+                    <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
+                </div>
+                <pre><code><span class="kql-comment">// This query won't return results - 'has' requires exact word matches</span>
+<span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> result <span class="kql-keyword">has</span> <span class="kql-string">"fail"</span>
+<span class="kql-pipe">|</span> <span class="kql-function">take</span> 10</code></pre>
+            </div>
+        </div>
+        
+        <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg mt-4">
+            <p class="text-sm text-gray-700">
+                <strong>Why the `has` query doesn't work:</strong> The `has` operator looks for complete words (tokens) separated by word boundaries. 
+                In the AuthenticationEvents table, the `result` column contains values like "Failed" or "Success" - complete words. 
+                When you search for `has "fail"`, it's looking for the exact word "fail", but the actual value is "Failed". 
+                Since "fail" is not a complete word in the data, `has` won't find it. Use `contains "fail"` instead, 
+                or use `has "Failed"` if you want the performance benefit of the indexed search.
+            </p>
+        </div>
+    </div>
+
+    <div>
+        <h3 class="text-xl font-semibold mb-6 mt-8 text-gray-800">4. Selecting & Extending Columns</h3>
+        <p class="mb-6"><code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">project</code> lets you pick which columns to display and rename them. <code class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm">extend</code> creates a new column while keeping the existing ones.</p>
+         <div class="code-block relative rounded-lg p-4 font-mono text-sm my-6">
+            <div class="flex space-x-2 absolute top-2 right-2">
+                <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
+            </div>
+            <pre><code><span class="kql-table">AuthenticationEvents</span>
+<span class="kql-pipe">|</span> <span class="kql-keyword">extend</span> timestamp = <span class="kql-function">todatetime</span>(timestamp)
+<span class="kql-pipe">|</span> <span class="kql-keyword">extend</span> event_hour <span class="kql-pipe">=</span> <span class="kql-function">bin</span>(timestamp, 1h)
+<span class="kql-pipe">|</span> <span class="kql-keyword">project</span> timestamp, event_hour, result
+<span class="kql-pipe">|</span> <span class="kql-function">take</span> 10</code></pre>
+        </div>
+    </div>
+</div>
