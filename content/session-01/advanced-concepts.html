@@ -51,17 +51,22 @@ FailedLogins
             <div class="flex space-x-2 absolute top-2 right-2">
                 <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors">Copy</button>
             </div>
-            <pre><code><span class="kql-comment">// Calculate failed logins once and reuse the result</span>
-<span class="kql-keyword">let</span> FailedLoginData <span class="kql-pipe">=</span> <span class="kql-function">materialize</span>(
+            <pre><code><span class="kql-keyword">let</span> FailedLoginData <span class="kql-pipe">=</span> <span class="kql-function">materialize</span> (
     <span class="kql-table">AuthenticationEvents</span>
     <span class="kql-pipe">|</span> <span class="kql-keyword">where</span> result <span class="kql-pipe">==</span> <span class="kql-string">"Failed Login"</span>
-    <span class="kql-pipe">|</span> <span class="kql-keyword">where</span> timestamp <span class="kql-pipe">&gt;=</span> <span class="kql-function">ago</span>(7d)
+    <span class="kql-pipe">|</span> <span class="kql-keyword">extend</span> timestamp <span class="kql-pipe">=</span> <span class="kql-function">todatetime</span>(timestamp)
 );
-<span class="kql-comment">// Now use the materialized data multiple times without recomputation</span>
-<span class="kql-keyword">union</span>
-    (FailedLoginData <span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> TotalFailedLogins <span class="kql-pipe">=</span> <span class="kql-function">count()</span>),
-    (FailedLoginData <span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> UniqueUsers <span class="kql-pipe">=</span> <span class="kql-function">dcount</span>(username)),
-    (FailedLoginData <span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> UniqueIPs <span class="kql-pipe">=</span> <span class="kql-function">dcount</span>(src_ip))</code></pre>
+<span class="kql-comment">// Example 1: Count of failed logins per user</span>
+FailedLoginData
+<span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> FailedCount <span class="kql-pipe">=</span> <span class="kql-function">count()</span> <span class="kql-keyword">by</span> username;
+<span class="kql-comment">// Example 2: Top 5 source IPs causing failed logins</span>
+FailedLoginData
+<span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> FailedAttempts <span class="kql-pipe">=</span> <span class="kql-function">count()</span> <span class="kql-keyword">by</span> src_ip
+<span class="kql-pipe">|</span> <span class="kql-keyword">top</span> 5 <span class="kql-keyword">by</span> FailedAttempts <span class="kql-keyword">desc</span>;
+<span class="kql-comment">// Example 3: Time series of failed logins</span>
+FailedLoginData
+<span class="kql-pipe">|</span> <span class="kql-keyword">summarize</span> Count <span class="kql-pipe">=</span> <span class="kql-function">count()</span> <span class="kql-keyword">by</span> <span class="kql-function">bin</span>(timestamp, 1h)
+<span class="kql-pipe">|</span> <span class="kql-keyword">render</span> timechart</code></pre>
         </div>
         
         <div class="bg-green-50 border-l-4 border-green-400 p-4 rounded-r-lg mt-4">
@@ -73,8 +78,24 @@ FailedLogins
                 </div>
                 <div class="ml-3">
                     <p class="text-sm text-green-700">
-                        <strong>Performance Tip:</strong> Without <code class="bg-green-100 text-green-800 px-1 py-0.5 rounded font-mono text-xs">materialize</code>, the filtered authentication events would be computed three separate times. 
-                        With <code class="bg-green-100 text-green-800 px-1 py-0.5 rounded font-mono text-xs">materialize</code>, the expensive filtering operation runs only once, and the cached result is reused for all three summarizations.
+                        <strong>Multiple Results:</strong> This query produces three separate tables and a visual timechart all at once, reusing the same filtered data. 
+                        Without <code class="bg-green-100 text-green-800 px-1 py-0.5 rounded font-mono text-xs">materialize</code>, the failed login filtering would be computed three separate times, making it much less efficient.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg mt-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-blue-700">
+                        <strong>Note:</strong> The performance benefits of <code class="bg-blue-100 text-blue-800 px-1 py-0.5 rounded font-mono text-xs">materialize</code> are most valuable with large datasets containing millions or billions of records. 
+                        You will not notice a significant performance difference when working with these smaller training datasets, but it's an essential optimization technique for production environments.
                     </p>
                 </div>
             </div>
