@@ -11,17 +11,20 @@ This platform provides structured KQL learning content with real-time search, pr
 ### Core Components
 
 **Content Management System**
+
 - JSON-based configuration (`content/sessions-config.json`)
 - Dynamic content loading with caching
 - Modular session and topic structure
 
 **User Interface**
+
 - Responsive navigation with collapsible sessions
 - Real-time search with fuzzy matching
 - Progress tracking with local storage
 - Monaco Editor integration for syntax highlighting
 
 **Technical Stack**
+
 - Vanilla JavaScript with ES6+ features
 - Tailwind CSS for styling
 - Monaco Editor for code display
@@ -73,26 +76,29 @@ Sessions are defined in JSON format:
 ## Content Management
 
 ### Adding Sessions
+
 1. Update `content/sessions-config.json` with session metadata
 2. Create content files in `content/session-XX/` directory
 3. Follow existing content structure and styling patterns
 
 ### Content Types
+
 - **Overview**: Introduction and context
 - **Setup**: Environment configuration
 - **Tutorial**: Step-by-step learning content
 - **Practice**: Exercises and challenges
 
-
 ## Deployment
 
 ### Development
+
 ```bash
 python -m http.server 8000
 # Open http://localhost:8000
 ```
 
 ### Production
+
 Deploy to any static web hosting service. The application requires no server-side components.
 
 ## Browser Requirements
