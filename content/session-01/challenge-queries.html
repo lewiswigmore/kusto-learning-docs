@@ -225,20 +225,55 @@
             <div class="flex space-x-2 absolute top-2 right-2">
                 <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors duration-200">Copy</button>
             </div>
-            <pre><code>let C = AuthenticationEvents
-| where not(ipv4_is_private(src_ip))
-| extend timestamp = todatetime(timestamp)
-| where isnotempty(src_ip)
+            <pre><code>let T = AuthenticationEvents
+| where 
+    isnotempty(src_ip)  // Check IP address field is not empty
     and result == "Successful Login"
-| extend Location = geo_info_from_ip_address(src_ip)
+    and not(ipv4_is_private(src_ip))  // Exclude private/internal IP addresses
+| extend 
+    timestamp = todatetime(timestamp),
+    Location = geo_info_from_ip_address(src_ip)  // Get geographic location from IP
 | where Location contains "China"
 | distinct username;
 AuthenticationEvents
-| where not(ipv4_is_private(src_ip))
-| extend Location = geo_info_from_ip_address(src_ip)
-| where username in (C) and Location contains "Russia"
+| extend Location = geo_info_from_ip_address(src_ip)  // Get geographic location from IP
+| where not(ipv4_is_private(src_ip))  // Exclude private/internal IP addresses
+    and username in (T) 
+    and Location contains "Russia"
 | distinct username</code></pre>
         </div>
+        
+        <!-- Alternative Join-Based Solution -->
+        <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 class="font-medium text-blue-800 mb-3">🔗 Alternative Solution: Using Join</h4>
+            <div class="code-block relative rounded-lg p-4 font-mono text-sm shadow-sm bg-white">
+                <div class="flex space-x-2 absolute top-2 right-2">
+                    <button class="copy-btn bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs hover:bg-blue-200 transition-colors duration-200">Copy</button>
+                </div>
+                <pre><code>let ChinaLogins = AuthenticationEvents
+| where isnotempty(src_ip)  // Check IP address field is not empty
+    and result == "Successful Login"
+    and not(ipv4_is_private(src_ip))  // Exclude private/internal IP addresses
+| extend Location = geo_info_from_ip_address(src_ip)  // Get geographic location from IP
+| where Location contains "China"
+| distinct username;
+let RussiaLogins = AuthenticationEvents
+| where isnotempty(src_ip)  // Check IP address field is not empty
+    and result == "Successful Login"
+    and not(ipv4_is_private(src_ip))  // Exclude private/internal IP addresses
+| extend Location = geo_info_from_ip_address(src_ip)  // Get geographic location from IP
+| where Location contains "Russia"
+| distinct username;
+ChinaLogins
+| join kind=inner (RussiaLogins) on username  // Find users in both datasets
+| project username</code></pre>
+            </div>
+            <p class="text-sm text-blue-700 mt-3">
+                <strong>Note:</strong> This approach uses explicit joins instead of the <code class="bg-blue-100 text-blue-800 px-1 py-0.5 rounded font-mono text-xs">in</code> operator, 
+                making the relationship between the two datasets more explicit and easier to understand.
+            </p>
+        </div>
+        
         <div class="mt-3 bg-gray-50 rounded-lg p-4">
             <h4 class="font-medium text-gray-800 mb-2">Expected Results:</h4>
             <div class="overflow-x-auto">
