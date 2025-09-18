@@ -30,7 +30,7 @@
             <pre><code><span class="kql-comment">// A well-optimized query filters on a timestamp first.</span>
 <span class="kql-table">AuthenticationEvents</span>
 <span class="kql-pipe">|</span> <span class="kql-keyword">extend</span> timestamp <span class="kql-pipe">=</span> <span class="kql-function">todatetime</span>(timestamp) <span class="kql-comment">// Convert schema from string to datetime to filter</span>
-<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> timestamp <span class="kql-keyword">between</span> (<span class="kql-function">startofday</span>(<span class="kql-function">datetime</span>(2022-01-03))..<span class="kql-function">endofday</span>(<span class="kql-function">datetime</span>(2022-01-03)))
+<span class="kql-pipe">|</span> <span class="kql-keyword">where</span> timestamp <span class="kql-keyword">between</span> (<span class="kql-function">startofday</span>(<span class="kql-function">datetime</span>(2022-01-03)) .. <span class="kql-function">endofday</span>(<span class="kql-function">datetime</span>(2022-01-03)))
     <span class="kql-keyword">and</span> result <span class="kql-pipe">==</span> <span class="kql-string">"Successful Login"</span>
 <span class="kql-pipe">|</span> <span class="kql-function">count</span></code></pre>
         </div>
